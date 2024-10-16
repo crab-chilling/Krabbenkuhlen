@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.cpe.springboot.card.model.CardDTO;
+import com.cpe.springboot.common.tools.DTOMapper;
+import com.cpe.springboot.dto.CardDTO;
 import org.springframework.stereotype.Service;
 
 import com.cpe.springboot.card.Controller.CardModelService;
@@ -85,7 +86,7 @@ public class StoreService {
 	public List<CardDTO> listCardToSell() {
 		List<CardDTO> list=new ArrayList<>();
 		for( CardModel c : cardService.getAllCardToSell()){
-			CardDTO cLight=new CardDTO(c);
+			CardDTO cLight= DTOMapper.fromCardModelToCardDTO(c);
 			list.add(cLight);
 		}
 		return list;

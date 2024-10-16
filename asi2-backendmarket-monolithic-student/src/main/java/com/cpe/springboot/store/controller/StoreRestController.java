@@ -1,14 +1,11 @@
 package com.cpe.springboot.store.controller;
 
-import com.cpe.springboot.card.model.CardDTO;
-import com.cpe.springboot.card.model.CardModel;
+import com.cpe.springboot.dto.CardDTO;
 import com.cpe.springboot.store.model.StoreOrder;
 import com.cpe.springboot.store.model.StoreTransaction;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 //ONLY FOR TEST NEED ALSO TO ALLOW CROOS ORIGIN ON WEB BROWSER SIDE
