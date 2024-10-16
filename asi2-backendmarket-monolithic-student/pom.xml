@@ -6,11 +6,11 @@
 	<parent>
 		<groupId>com.cpe.springboot</groupId>
 		<artifactId>krabbenkuhlen</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>${project.version}</version>
 	</parent>
 	<groupId>com.cpe.springboot</groupId>
 	<artifactId>asi2-backendmarket-monolithic-student</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${project.version}</version>
 	<name>asi2-backendmarket-monolithic-student</name>
 	<description>Archi monolithic Card Market</description>
 
