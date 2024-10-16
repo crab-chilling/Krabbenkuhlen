@@ -1,5 +1,6 @@
 package com.cpe.springboot.card.model;
 
+import com.cpe.springboot.dto.CardBasics;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,10 +16,6 @@ public class CardReference extends CardBasics implements Serializable {
 	private Integer id;
 
 	public CardReference() {
-	}
-
-	public CardReference(CardBasics c) {
-		super(c);
 	}
 
 	public CardReference(String name, String description, String family, String affinity,String imgUrl,String smallImgUrl) {

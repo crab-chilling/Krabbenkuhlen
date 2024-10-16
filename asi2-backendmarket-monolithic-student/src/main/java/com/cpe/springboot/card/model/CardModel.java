@@ -1,5 +1,6 @@
 package com.cpe.springboot.card.model;
 
+import com.cpe.springboot.dto.CardBasics;
 import com.cpe.springboot.store.model.StoreTransaction;
 import com.cpe.springboot.user.model.UserModel;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -9,7 +10,7 @@ import jakarta.persistence.*;
 
 @Entity
 @JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
-public class CardModel extends CardBasics{
+public class CardModel extends CardBasics {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;

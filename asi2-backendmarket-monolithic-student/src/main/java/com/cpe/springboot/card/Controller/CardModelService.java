@@ -5,14 +5,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.cpe.springboot.dto.CardDTO;
 import org.springframework.stereotype.Service;
 
-import com.cpe.springboot.card.model.CardDTO;
 import com.cpe.springboot.card.model.CardModel;
 import com.cpe.springboot.card.model.CardReference;
 import com.cpe.springboot.common.tools.DTOMapper;
-import com.cpe.springboot.user.model.UserModel;
 
 @Service
 public class CardModelService {

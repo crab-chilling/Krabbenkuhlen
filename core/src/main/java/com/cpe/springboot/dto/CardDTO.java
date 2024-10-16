@@ -1,4 +1,4 @@
-package com.cpe.springboot.card.model;
+package com.cpe.springboot.dto;
 
 public class CardDTO extends CardBasics {
 	private Integer id;
@@ -13,19 +13,16 @@ public class CardDTO extends CardBasics {
 
 	}
 
-	public CardDTO(CardModel cModel) {
-		super(cModel);
-		this.id = cModel.getId();
-		this.energy = cModel.getEnergy();
-		this.hp = cModel.getHp();
-		this.defence = cModel.getDefence();
-		this.attack = cModel.getAttack();
-		this.price = cModel.getPrice();
-		if (cModel.getUser() != null) {
-			this.userId = cModel.getUser().getId();
-		} else {
-			this.userId = null;
-		}
+	public CardDTO(String name, String description, String family, String affinity, String imgUrl,
+				   String smallImgUrl, Integer id, float energy, float hp, float defence, float attack, float price, Integer userId) {
+		super(name, description, family, affinity, imgUrl, smallImgUrl);
+		this.id = id;
+		this.energy = energy;
+		this.hp = hp;
+		this.defence = defence;
+		this.attack = attack;
+		this.price = price;
+		this.userId = userId;
 	}
 
 	public Integer getId() {

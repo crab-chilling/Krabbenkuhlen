@@ -1,4 +1,4 @@
-package com.cpe.springboot.card.model;
+package com.cpe.springboot.dto;
 
 import jakarta.persistence.MappedSuperclass;
 
