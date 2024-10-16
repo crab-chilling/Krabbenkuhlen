@@ -1,9 +1,19 @@
 services:
+  
   gestionnaire2queue:
-    image: islandora/activemq:main-arm64
     container_name: activemq
+    image: symptoma/activemq:5.18.3
+    stdin_open: true
+    tty: true
     ports:
-      - "8161:8161"  # Web Console
-      - "61616:61616"  # Broker
+      - 61616:61616
+      - 61613:61613
+      - 8161:8161
+    environment:
+      - ACTIVEMQ_DISALLOW_WEBCONSOLE=false
+      - ACTIVEMQ_USERNAME=admin
+      - ACTIVEMQ_PASSWORD=admin
+      - ACTIVEMQ_WEBADMIN_USERNAME=admin
+      - ACTIVEMQ_WEBADMIN_PASSWORD=admin
     volumes:
       - ./conf/activemq.xml:/opt/activemq/conf/activemq.xml
