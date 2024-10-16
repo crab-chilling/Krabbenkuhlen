@@ -8,8 +8,8 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<groupId>com.cpe.springboot</groupId>
-	<artifactId>card-generator</artifactId>
+	<artifactId>core</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>card-generator</name>
-	<description>Card generator</description>
+	<name>core</name>
+	<description>Common resources</description>
 </project>

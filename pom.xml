@@ -12,16 +12,18 @@
         </parent>
  	<groupId>com.cpe.springboot</groupId>
  	<artifactId>krabbenkuhlen</artifactId>
-	<version>${project.version}</version>
+	<version>0.0.1-SNAPSHOT</version>
  	<packaging>pom</packaging>
 	<name>Crab chilling multi project</name>
 	<properties>
+		<java.version>17</java.version>
 		<springboot.version>3.2.5</springboot.version>
 		<project.version>0.0.1-SNAPSHOT</project.version>
 	</properties>
  	<modules>
    		 <module>asi2-backendmarket-monolithic-student</module>
 		 <module>card-generator</module>
+		 <module>core</module>
 	 </modules>
 
 	 <dependencies>
