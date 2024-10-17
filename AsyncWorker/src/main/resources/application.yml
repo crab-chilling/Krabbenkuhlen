@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: AsyncWorker
+
+server:
+  port: 8081
+
+api:
+  url:
+    neural: "http://localhost:8080/prompt/req"
+    ollama: "http://localhost:11434/api/generate"
