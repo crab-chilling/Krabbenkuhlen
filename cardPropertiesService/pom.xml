@@ -60,10 +60,10 @@
 			<systemPath>${project.basedir}/colorToproperties-1.1.2.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-all</artifactId>
-			<version>6.1.3</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-activemq</artifactId>
 		</dependency>
+
 	</dependencies>
 
 	<build>

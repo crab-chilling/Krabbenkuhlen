@@ -1,15 +1,19 @@
 package com.cpe.springboot.cardPropertiesService.controller;
 
 import com.cpe.springboot.cardPropertiesService.dto.PropertiesTransactionDTO;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.cpe.springboot.cardPropertiesService.service.PropertiesService;
+import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@AllArgsConstructor
 public class PropertiesController {
 
-    @PostMapping
-    public void publishTransaction(@RequestBody PropertiesTransactionDTO transactionDTO){
+    private PropertiesService service;
 
+    @RequestMapping(method = RequestMethod.POST, value = "/properties")
+    public void publishTransaction(@RequestBody PropertiesTransactionDTO transactionDTO){
+        service.startActiveMqListener();
+        service.publishTransactionIntoMQ(transactionDTO);
     }
 }
