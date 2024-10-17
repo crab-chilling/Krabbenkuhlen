@@ -4,19 +4,24 @@ import { Grid } from "@mui/material";
 import CardTable from "../components/Card/CardTable";
 import Loader from "../components/Loader";
 import { useSelector } from "react-redux";
-import { isUserAuthenticated } from "../store/selectors/user.selectors";
+import { isUserAuthenticated, selectUserAccount } from "../store/selectors/user.selectors";
 import CardDetails from "../components/Card/CardDetails";
 import ActionButton from "../components/Buttons/ActionButton";
 import SellIcon from "@mui/icons-material/Sell";
 import { sellCard } from "../api/market";
 import { toast } from "react-toastify";
 import { selectInventoryCards } from "../store/selectors/inventory.selectors";
+import { deleteInventoryCard } from "../store/actions/inventory.actions";
+import { useDispatch } from "react-redux";
+import { updateUserAccountAction } from "../store/actions/user.actions";
 
 export default function Sell() {
   const isAuthenticated = useSelector(isUserAuthenticated);
   const userCards = useSelector(selectInventoryCards);
+  const userMoney = useSelector(selectUserAccount);
 
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
   const [selectedCard, setSelectedCard] = useState(null);
 
   const handleCardSelect = (card) => {
@@ -32,6 +37,8 @@ export default function Sell() {
     setLoading(true);
     try {
       await sellCard(card.userId, card.id);
+      dispatch(deleteInventoryCard(card.id))
+      dispatch(updateUserAccountAction(userMoney + card.price));
       toast.success("Your card has been sold!");
     } catch {
       toast.error("An error occured...");

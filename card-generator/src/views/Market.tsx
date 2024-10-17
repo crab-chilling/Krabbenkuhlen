@@ -14,11 +14,16 @@ import CardDetails from "../components/Card/CardDetails";
 import ActionButton from "../components/Buttons/ActionButton";
 import { buyCard, fetchMarketCards } from "../api/market";
 import { toast } from "react-toastify";
+import { addInventoryCard } from "../store/actions/inventory.actions";
+import { updateUserAccountAction } from "../store/actions/user.actions";
+import { useDispatch } from "react-redux";
 
 export default function Market() {
   const isAuthenticated = useSelector(isUserAuthenticated);
   const userId = useSelector(selectUserId);
   const userAccount = useSelector(selectUserAccount);
+
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [cards, setCards] = useState<Array<Card>>([]);
@@ -47,6 +52,8 @@ export default function Market() {
     setLoading(true);
     try {
       await buyCard(userId, card.id);
+      dispatch(updateUserAccountAction(userAccount - card.price));
+      dispatch(addInventoryCard(card));
       toast.success("Successful purchage");
     } catch {
       toast.error("An error occured...");

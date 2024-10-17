@@ -26,5 +26,12 @@ export const userReducer = (
     };
   }
 
+  if (action.type === "user/money") {
+    return {
+      ...state,
+      account: action.payload,
+    };
+  }
+  
   return state;
 };
