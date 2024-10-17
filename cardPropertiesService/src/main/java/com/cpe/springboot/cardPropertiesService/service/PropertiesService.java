@@ -1,4 +1,4 @@
-package com.cpe.springboot.cardPropertiesService.service;
+/*package com.cpe.springboot.cardPropertiesService.service;
 
 import com.cpe.springboot.cardPropertiesService.ActiveMQListener;
 import com.cpe.springboot.cardPropertiesService.configuration.ActiveMQConfiguration;
@@ -53,7 +53,6 @@ public class PropertiesService {
 
     @JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
     public PropertiesTransactionDTO receiveTransactionMessage() throws JMSException, JsonProcessingException {
-        log.info("[PropertiesService] " + jmsTemplate.receive(ActiveMQConfiguration.PROPERTIES_OWN_QUEUE).getBody(String.class));
         String message = jmsTemplate.receive(ActiveMQConfiguration.PROPERTIES_OWN_QUEUE).getBody(String.class);
         if(message != null){
             PropertiesTransactionDTO dto = objectMapper.readValue(message, PropertiesTransactionDTO.class);
@@ -74,4 +73,4 @@ public class PropertiesService {
                 properties.get(ImgToProperties.LABEL_ATTACK),
                 properties.get(ImgToProperties.LABEL_DEFENSE));
     }
-}
+}*/
