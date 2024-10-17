@@ -2,6 +2,7 @@ package com.cpe.springboot.AsyncWorker.services;
 
 import com.cpe.springboot.AsyncWorker.models.ImageRequest;
 import com.cpe.springboot.AsyncWorker.models.PromptDto;
+import com.cpe.springboot.AsyncWorker.models.PromptRequest;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,9 @@ public class PromptService {
     }
 
 
-    public void createPrompt(PromptDto forQueue) {
+    public void createPrompt(PromptRequest req) {
+        PromptDto forQueue = new PromptDto(req.getPrompt());
+
         client.post()
                 .uri(this.apiUrl)
                 .contentType(MediaType.APPLICATION_JSON)

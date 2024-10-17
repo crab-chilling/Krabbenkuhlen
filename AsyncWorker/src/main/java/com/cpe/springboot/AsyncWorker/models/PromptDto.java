@@ -1,12 +1,19 @@
 package com.cpe.springboot.AsyncWorker.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.io.Serializable;
 
-@AllArgsConstructor
+@Data
 public class PromptDto implements Serializable {
-    private final static String model = "qwen2:0.5b";
+    private String model;
     private String prompt;
-    private final static boolean stream = false;
+    private boolean stream;
+
+    public PromptDto(String prompt) {
+        this.model = "qwen2:0.5b";
+        this.stream = false;
+        this.prompt = prompt;
+    }
 }
