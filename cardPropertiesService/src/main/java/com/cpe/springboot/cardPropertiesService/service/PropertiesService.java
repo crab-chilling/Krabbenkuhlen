@@ -1,4 +1,4 @@
-/*package com.cpe.springboot.cardPropertiesService.service;
+package com.cpe.springboot.cardPropertiesService.service;
 
 import com.cpe.springboot.cardPropertiesService.ActiveMQListener;
 import com.cpe.springboot.cardPropertiesService.configuration.ActiveMQConfiguration;
@@ -73,4 +73,4 @@ public class PropertiesService {
                 properties.get(ImgToProperties.LABEL_ATTACK),
                 properties.get(ImgToProperties.LABEL_DEFENSE));
     }
-}*/
+}
