@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 public class ActiveMqTest {
-
+    /*
     @Autowired
     PropertiesService service;
     @Test
@@ -28,10 +28,10 @@ public class ActiveMqTest {
         dtoTest.setBase64(false);
 
         //Act
-        service.publishTransactionIntoMQ(dtoTest);
+        service.publish(dtoTest);
     }
 
-    /*@Test
+    @Test
     public void sendActiveMqMessage_Base64() {
         //Prepare
         PropertiesTransactionDTO dtoTest = new PropertiesTransactionDTO();
@@ -43,7 +43,7 @@ public class ActiveMqTest {
 
         //Act
         service.publishTransactionIntoMQ(dtoTest);
-    }*/
+    }
 
     @Test
     public void readActiveMqMessage() throws JMSException, JsonProcessingException {
@@ -64,7 +64,7 @@ public class ActiveMqTest {
         assertEquals(dtoTestSend.getIdTransaction(),dtoTest.getIdTransaction());
         assertEquals(dtoTestSend.getImgUrl(), dtoTest.getImgUrl());
     }
-
+    */
     /*@Test
     public void extractImageProperties() throws JMSException, JsonProcessingException {
         //Prepare

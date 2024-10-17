@@ -1,4 +1,4 @@
-package com.cpe.springboot.cardPropertiesService.configuration;
+package com.cpe.springboot.activemq;
 
 import jakarta.jms.ConnectionFactory;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;

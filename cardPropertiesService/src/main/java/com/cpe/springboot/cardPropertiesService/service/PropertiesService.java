@@ -1,17 +1,15 @@
 package com.cpe.springboot.cardPropertiesService.service;
 
-import com.cpe.springboot.cardPropertiesService.ActiveMQListener;
+import com.cpe.springboot.activemq.ActiveMQ;
+import com.cpe.springboot.cardPropertiesService.PropertiesListener;
 import com.cpe.springboot.cardPropertiesService.configuration.ActiveMQConfiguration;
 import com.cpe.springboot.cardPropertiesService.dto.PropertiesDTO;
 import com.cpe.springboot.cardPropertiesService.dto.PropertiesTransactionDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.JMSException;
-import jakarta.jms.Message;
-import jakarta.jms.TextMessage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
@@ -24,31 +22,17 @@ import java.util.Map;
 @Slf4j
 public class PropertiesService {
 
-    JmsTemplate jmsTemplate;
-
+    private final JmsTemplate jmsTemplate;
     ObjectMapper objectMapper;
 
-    public void publishTransactionIntoMQ(PropertiesTransactionDTO transactionDTO) {
-        log.info("[PropertiesService] Send message :" + transactionDTO);
-        //jmsTemplate.convertAndSend(ActiveMQConfiguration.PROPERTIES_OWN_QUEUE, transactionDTO);
-        jmsTemplate.send(ActiveMQConfiguration.PROPERTIES_OWN_QUEUE, s -> {
-            try {
-                TextMessage msg = s.createTextMessage(objectMapper.writeValueAsString(transactionDTO));
-                msg.setStringProperty("Content-Type", "application/json");
-                msg.setStringProperty("ObjectType", transactionDTO.getClass().getCanonicalName());
+    ActiveMQ activeMQ;
 
-                return msg;
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        log.info("[PropertiesService] Message sent");
-
+    public void publish(PropertiesTransactionDTO transactionDTO) {
+        activeMQ.publish(transactionDTO, ActiveMQConfiguration.PROPERTIES_OWN_QUEUE);
     }
 
     public void startActiveMqListener(){
-        Thread thread = new Thread(new ActiveMQListener(this, jmsTemplate));
-        thread.start();
+        activeMQ.startListener(new PropertiesListener(this, jmsTemplate));
     }
 
     @JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
