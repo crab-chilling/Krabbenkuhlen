@@ -14,6 +14,6 @@ public class PropertiesController {
     @RequestMapping(method = RequestMethod.POST, value = "/properties")
     public void publishTransaction(@RequestBody PropertiesTransactionDTO transactionDTO){
         service.startActiveMqListener();
-        service.publishTransactionIntoMQ(transactionDTO);
+        service.publish(transactionDTO);
     }
 }

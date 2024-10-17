@@ -21,9 +21,10 @@
 		<project.version>0.0.1-SNAPSHOT</project.version>
 	</properties>
  	<modules>
-         <module>core</module>
-   		 <module>asi2-backendmarket-monolithic-student</module>
-		 <module>card-generator</module>
+        <module>core</module>
+   		<module>asi2-backendmarket-monolithic-student</module>
+		<module>card-generator</module>
+        <module>cardPropertiesService</module>
 	 </modules>
 
 	 <dependencies>
