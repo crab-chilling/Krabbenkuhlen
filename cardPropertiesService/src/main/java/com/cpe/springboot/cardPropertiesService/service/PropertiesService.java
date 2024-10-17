@@ -23,6 +23,7 @@ import java.util.Map;
 public class PropertiesService {
 
     private final JmsTemplate jmsTemplate;
+
     ObjectMapper objectMapper;
 
     ActiveMQ activeMQ;
