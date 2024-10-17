@@ -43,7 +43,7 @@ export default function Header() {
           {isAuthenticated ? (
             <>
               <Typography sx={{ color: "white", mr: 2 }}>
-                {userLastName} {userSurname} - Wallet: {userAccount} $
+                {userLastName} {userSurname} - Wallet: {userAccount.toFixed(2)} $
               </Typography>
               <Button sx={{ color: "white" }} onClick={handleLogout}>
                 Logout

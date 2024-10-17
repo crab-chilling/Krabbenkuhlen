@@ -8,3 +8,8 @@ export const loginAction = (user: User) => ({
 export const logoutAction = () => ({
   type: "user/logout",
 });
+
+export const updateUserAccountAction = (moneyUpdate: number) => ({
+  type: "user/money",
+  payload: moneyUpdate,
+})
