@@ -21,6 +21,7 @@
             <queue physicalName="notification"/>
             <queue physicalName="asyncworkers"/>
             <queue physicalName="createdcard"/>
+            <queue physicalName="properties"/>
         </destinations>
 
         <destinationPolicy>
