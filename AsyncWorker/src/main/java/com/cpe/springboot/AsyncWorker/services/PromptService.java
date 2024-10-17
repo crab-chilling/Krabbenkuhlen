@@ -1,8 +1,7 @@
 package com.cpe.springboot.AsyncWorker.services;
 
-import com.cpe.springboot.AsyncWorker.models.ImageRequest;
-import com.cpe.springboot.AsyncWorker.models.PromptDto;
 import com.cpe.springboot.AsyncWorker.models.PromptRequest;
+import com.cpe.springboot.AsyncWorker.models.PromptDto;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
@@ -37,13 +37,13 @@ public class PromptService {
     }
 
 
-    public void createPrompt(PromptRequest req) {
-        PromptDto forQueue = new PromptDto(req.getPrompt());
+    public void createPrompt(PromptDto req) {
+        PromptRequest forQueue = new PromptRequest(req.getPrompt());
 
         client.post()
                 .uri(this.apiUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(forQueue, PromptDto.class)
+                .bodyValue(BodyInserters.fromValue(forQueue))
                 .retrieve()
                 // todo:
                 .bodyToMono(String.class)

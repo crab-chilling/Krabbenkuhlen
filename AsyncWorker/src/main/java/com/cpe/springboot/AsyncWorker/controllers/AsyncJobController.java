@@ -1,7 +1,7 @@
 package com.cpe.springboot.AsyncWorker.controllers;
 
 import com.cpe.springboot.AsyncWorker.models.ImageDto;
-import com.cpe.springboot.AsyncWorker.models.PromptRequest;
+import com.cpe.springboot.AsyncWorker.models.PromptDto;
 import com.cpe.springboot.AsyncWorker.services.ImageService;
 import com.cpe.springboot.AsyncWorker.services.PromptService;
 import lombok.AllArgsConstructor;
@@ -29,7 +29,7 @@ public class AsyncJobController {
     }
 
     @PostMapping("/prompt")
-    public HttpStatus promptImage(@RequestBody PromptRequest promptRequest) {
+    public HttpStatus promptImage(@RequestBody PromptDto promptRequest) {
         try {
             promptService.createPrompt(promptRequest);
         } catch (Exception e) {

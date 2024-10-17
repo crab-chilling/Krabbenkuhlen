@@ -1,0 +1,32 @@
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama-local
+    volumes:
+      - ollama:/root/.ollama
+      - ./prompt-gen/init.sh:/init.sh
+    ports:
+      - 11434:11434
+    entrypoint: ["bash", "/init.sh"]
+  
+  img-gen:
+    container_name: img-gen
+    ports:
+      - 8080:8080
+    environment:
+      - external.iaimgapi.token=v1.78a9b0a2b1a82d28030354b686bc9a83230a88c71382005fe005c4606e1e7d59
+    image: registry.gitlab.com/js-asi2/asi2-resources/img-gene-neural-love-api:v1.1
+
+  gestionnaire2queue:
+    image: islandora/activemq:main-arm64
+    container_name: gestionnaire2queue 
+    ports:
+      - "8161:8161"  # Web Console
+      - "61616:61616"  # Broker
+    volumes:
+      - ./activemq/conf/activemq.xml:/opt/activemq/conf/activemq.xml
+
+volumes:
+  ollama:
+    name: ollama
+

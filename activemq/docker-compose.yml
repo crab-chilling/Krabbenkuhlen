@@ -1,9 +1,0 @@
-services:
-  gestionnaire2queue:
-    image: islandora/activemq:main-arm64
-    container_name: gestionnaire2queue 
-    ports:
-      - "8161:8161"  # Web Console
-      - "61616:61616"  # Broker
-    volumes:
-      - ./conf/activemq.xml:/opt/activemq/conf/activemq.xml

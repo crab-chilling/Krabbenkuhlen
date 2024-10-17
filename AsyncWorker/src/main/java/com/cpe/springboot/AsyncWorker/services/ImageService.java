@@ -18,7 +18,7 @@ import java.time.Duration;
 @Service
 public class ImageService {
 
-    @Value("${api.url.neural-love}")
+    @Value("${api.url.neural}")
     private String apiUrl;
 
     private final WebClient client;

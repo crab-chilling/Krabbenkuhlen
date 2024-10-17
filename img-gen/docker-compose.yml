@@ -1,8 +1,0 @@
-services:
-    img-gen:
-        container_name: img-gen
-        ports:
-            - 8080:8080
-        environment:
-            - external.iaimgapi.token=v1.78a9b0a2b1a82d28030354b686bc9a83230a88c71382005fe005c4606e1e7d59
-        image: registry.gitlab.com/js-asi2/asi2-resources/img-gene-neural-love-api:v1.1
