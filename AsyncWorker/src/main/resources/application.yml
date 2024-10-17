@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: AsyncWorker
+
+api:
+  url:
+    neural-love: neural-love
+    ollama: ollama-local
