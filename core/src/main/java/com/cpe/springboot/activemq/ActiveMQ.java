@@ -39,17 +39,6 @@ public class ActiveMQ {
 
     }
 
-    /*@JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
-    public GenericMQDTO receiveMessage(String queueName) throws JMSException, JsonProcessingException {
-        String message = jmsTemplate.receive(queueName).getBody(String.class);
-        if(message != null){
-            PropertiesTransactionDTO dto = objectMapper.readValue(message, PropertiesTransactionDTO.class);
-            return dto;
-        }else {
-            return null;
-        }
-    }*/
-
     public void startListener(ActiveMQListener activeMQListener){
         Thread thread = new Thread(activeMQListener);
         thread.start();
