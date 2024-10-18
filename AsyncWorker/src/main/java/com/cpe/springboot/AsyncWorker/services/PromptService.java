@@ -1,7 +1,8 @@
 package com.cpe.springboot.AsyncWorker.services;
 
+import com.cpe.springboot.AsyncWorker.models.DescriptionResponse;
 import com.cpe.springboot.AsyncWorker.models.PromptRequest;
-import com.cpe.springboot.AsyncWorker.models.PromptDto;
+import com.google.gson.Gson;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ import java.time.Duration;
 @Service
 public class PromptService {
 
-    @Value("${api.url.ollama}")
+    @Value("${api.url.llama}")
     private String apiUrl;
 
     private final WebClient client;
@@ -37,24 +38,25 @@ public class PromptService {
     }
 
 
-    public void createPrompt(PromptDto req) {
-        PromptRequest forQueue = new PromptRequest(req.getPrompt());
+    public void createPrompt(String prompt) {
+        PromptRequest forQueue = new PromptRequest("qwen2:0.5b", prompt, false);
 
         client.post()
                 .uri(this.apiUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(BodyInserters.fromValue(forQueue))
+                .bodyValue(forQueue)
                 .retrieve()
-                // todo:
                 .bodyToMono(String.class)
                 .subscribe(res -> {
                     log.info("Publishing to queue");
-                    // todo publish queu
+                    Gson content = new Gson();
+                    DescriptionResponse desc = content.fromJson(res, DescriptionResponse.class);
+                    log.info("{}", desc);
                 }, error -> {
                     log.error("We are cooked");
                     // todo publish error
+                    error.printStackTrace();
                 });
-
     }
 
 }

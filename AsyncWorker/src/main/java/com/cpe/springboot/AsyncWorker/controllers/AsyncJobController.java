@@ -1,7 +1,6 @@
 package com.cpe.springboot.AsyncWorker.controllers;
 
-import com.cpe.springboot.AsyncWorker.models.ImageDto;
-import com.cpe.springboot.AsyncWorker.models.PromptDto;
+import com.cpe.springboot.AsyncWorker.models.GenerationRequest;
 import com.cpe.springboot.AsyncWorker.services.ImageService;
 import com.cpe.springboot.AsyncWorker.services.PromptService;
 import lombok.AllArgsConstructor;
@@ -17,21 +16,11 @@ public class AsyncJobController {
     private ImageService imageService;
     private PromptService promptService;
 
-    @PostMapping("/image")
-    public HttpStatus generateImage(@RequestBody ImageDto imageRequest) {
+    @PostMapping("/generate")
+    public HttpStatus generateImage(@RequestBody GenerationRequest request) {
         try {
-            imageService.createImage(imageRequest);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-        return HttpStatus.OK;
-    }
-
-    @PostMapping("/prompt")
-    public HttpStatus promptImage(@RequestBody PromptDto promptRequest) {
-        try {
-            promptService.createPrompt(promptRequest);
+            imageService.createImage(request.getImagePrompt());
+            promptService.createPrompt(request.getDescriptionPrompt());
         } catch (Exception e) {
             e.printStackTrace();
             return HttpStatus.INTERNAL_SERVER_ERROR;

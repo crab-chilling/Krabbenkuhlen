@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
-public class ImageRequest implements Serializable {
-    private String promptTxt;
-    private String prompt;
+public class GenerationRequest implements Serializable {
+    private String imagePrompt;
+    private String descriptionPrompt;
 }
