@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
-public class PromptDto implements Serializable {
-    private String prompt;
-    private int transactionId;
+public class ImageResponse implements Serializable {
+    private String url;
+    private String base64;
 }

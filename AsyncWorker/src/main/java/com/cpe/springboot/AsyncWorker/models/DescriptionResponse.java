@@ -7,8 +7,6 @@ import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
-public class ImageDto implements Serializable {
-    private String promptTxt;
-    private String negativePromptTxt;
-    private int transactionId;
+public class DescriptionResponse implements Serializable {
+    private String response;
 }
