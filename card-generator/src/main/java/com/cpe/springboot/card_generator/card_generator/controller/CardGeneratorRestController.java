@@ -1,10 +1,9 @@
 package com.cpe.springboot.card_generator.card_generator.controller;
 
+import com.cpe.springboot.dto.requests.CardGeneratorTransactionDTO;
+
 import com.cpe.springboot.card_generator.card_generator.service.CardGeneratorService;
-import com.cpe.springboot.dto.CardBasics;
-import com.cpe.springboot.dto.CardDTO;
 import com.cpe.springboot.dto.AsyncResponseDTO;
-import com.cpe.springboot.dto.CardRequestDTO;
 import com.cpe.springboot.dto.enums.Status;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +18,8 @@ public class CardGeneratorRestController {
     }
 
     @RequestMapping(method= RequestMethod.POST, value="/generate")
-    public AsyncResponseDTO generate(@RequestBody CardRequestDTO cardRequestDTO)
-        {
-            this.cardGeneratorService.generateCard(cardRequestDTO);
-
-            return new AsyncResponseDTO(Status.OK, "Card generated successfully");
-        }
+    public AsyncResponseDTO generateCard(@RequestBody CardGeneratorTransactionDTO cardGeneratorTransactionDTO)
+    {
+        return this.cardGeneratorService.generateCard(cardGeneratorTransactionDTO);
+    }
 }

@@ -1,4 +1,4 @@
-package com.cpe.springboot.dto;
+package com.cpe.springboot.dto.requests;
 
 public class CardRequestDTO {
 
