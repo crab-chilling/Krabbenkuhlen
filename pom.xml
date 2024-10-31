@@ -25,6 +25,7 @@
    		<module>asi2-backendmarket-monolithic-student</module>
 		<module>card-generator</module>
         <module>cardPropertiesService</module>
+        <module>AsyncWorker</module>
 	 </modules>
 
 	 <dependencies>

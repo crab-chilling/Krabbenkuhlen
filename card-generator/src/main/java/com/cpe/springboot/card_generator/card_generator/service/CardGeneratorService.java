@@ -25,7 +25,7 @@ public class CardGeneratorService {
 
             cardDTO.setId(null);//ID pas encore géré ?
 
-            publishCardToQueue(CardDTO);//A implementer
+            //publishCardToQueue(CardDTO);//A implementer
 
             System.out.println("Card generated :" + cardDTO);
         }
