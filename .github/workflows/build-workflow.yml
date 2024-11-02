@@ -29,7 +29,7 @@ jobs:
     #Build first project
     - name: Build Monolith micro service
       run: |
-        cd asi2-backendmarket-monolithic-student-master
+        cd maven-multi-module-crab-services/asi2-backendmarket-monolithic-student-master
         mvn clean install
 
     #Build second project

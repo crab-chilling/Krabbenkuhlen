@@ -19,13 +19,13 @@ public class Transaction {
 
     private java.sql.Timestamp timestamp;
 
-    @OneToOne(mappedBy = "idTransaction")
+    @OneToOne(mappedBy = "transaction")
     private Properties properties;
 
-    @OneToOne(mappedBy = "idTransaction")
+    @OneToOne(mappedBy = "transaction")
     private Image image;
 
-    @OneToOne(mappedBy = "idTransaction")
+    @OneToOne(mappedBy = "transaction")
     private Description description;
 
     public Transaction() {

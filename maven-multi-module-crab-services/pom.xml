@@ -22,7 +22,7 @@
 	</properties>
  	<modules>
         <module>core</module>
-   		<module>asi2-backendmarket-monolithic-student</module>
+   		<module>asi2-backendmarket-monolithic-student-master</module>
 		<module>card-generator</module>
         <module>cardPropertiesService</module>
         <module>AsyncWorker</module>
