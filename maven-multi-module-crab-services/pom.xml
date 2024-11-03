@@ -26,6 +26,7 @@
 		<module>card-generator</module>
         <module>cardPropertiesService</module>
         <module>AsyncWorker</module>
+        <module>notifications-service</module>
 	 </modules>
 
 	 <dependencies>
