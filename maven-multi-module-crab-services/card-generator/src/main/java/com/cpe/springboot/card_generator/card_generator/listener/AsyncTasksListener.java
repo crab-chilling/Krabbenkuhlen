@@ -13,6 +13,7 @@ import org.hibernate.query.criteria.JpaRoot;
 import org.springframework.jms.core.JmsTemplate;
 
 import static com.cpe.springboot.card_generator.card_generator.common.Constants.ACTIVEMQ_QUEUE_CREATED_CARD;
+import static com.cpe.springboot.card_generator.card_generator.common.Constants.CARD_DEFAULT_PRICE;
 
 @AllArgsConstructor
 @Slf4j
@@ -51,14 +52,14 @@ public class AsyncTasksListener extends ActiveMQListener {
 
             } else if (genericMQDTO instanceof PropertiesDTO) {
 
-                transaction = cardGeneratorService.proceedPropertiesMessage((PropertiesDTO) propertiesDTO);
+                transaction = cardGeneratorService.proceedPropertiesMessage((PropertiesDTO) genericMQDTO);
                 
             }
 
             if (transaction != null && cardGeneratorService.isCardComplete(transaction)) {
-                jmsTemplate.convertAndSend(ACTIVEMQ_QUEUE_CREATED_CARD, new CreatedCardDTO(transaction.getImage().getImageUrl(), transaction.getImage().isBase64(),
+                jmsTemplate.convertAndSend(ACTIVEMQ_QUEUE_CREATED_CARD, new CreatedCardDTO(transaction.getUserId(), transaction.getImage().getImageUrl(), transaction.getImage().isBase64(),
                         transaction.getDescription().getDescription(), transaction.getProperties().getHp(), transaction.getProperties().getEnergy(), transaction.getProperties().getAttack(),
-                        transaction.getProperties().getDefense()));
+                        transaction.getProperties().getDefense(), CARD_DEFAULT_PRICE));
             }
         }
     }

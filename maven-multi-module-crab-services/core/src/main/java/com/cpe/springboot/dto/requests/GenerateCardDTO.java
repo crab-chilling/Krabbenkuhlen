@@ -1,5 +1,8 @@
 package com.cpe.springboot.dto.requests;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 public class GenerateCardDTO {
 
     private String imagePrompt;
