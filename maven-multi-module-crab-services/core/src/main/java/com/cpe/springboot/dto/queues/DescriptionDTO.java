@@ -1,6 +1,6 @@
 package com.cpe.springboot.dto.queues;
 
-public class DescriptionDTO extends GenericAsyncTaskDTO {
+public class DescriptionDTO extends GenericMQDTO {
 
     private String description;
 

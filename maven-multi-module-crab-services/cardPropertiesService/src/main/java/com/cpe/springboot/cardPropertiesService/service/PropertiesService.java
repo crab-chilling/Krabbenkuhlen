@@ -4,7 +4,8 @@ import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.cardPropertiesService.PropertiesListener;
 import com.cpe.springboot.cardPropertiesService.configuration.ActiveMQConfiguration;
 import com.cpe.springboot.cardPropertiesService.dto.PropertiesDTO;
-import com.cpe.springboot.cardPropertiesService.dto.PropertiesTransactionDTO;
+import com.cpe.springboot.dto.queues.ImageDTO;
+import com.cpe.springboot.dto.queues.PropertiesDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.JMSException;
@@ -28,32 +29,34 @@ public class PropertiesService {
 
     ActiveMQ activeMQ;
 
-    public void publish(PropertiesTransactionDTO transactionDTO) {
-        activeMQ.publish(transactionDTO, ActiveMQConfiguration.PROPERTIES_OWN_QUEUE);
+    public void publish(com.cpe.springboot.dto.requests.PropertiesTransactionDTO transactionDTO) {
+        ImageDTO imageDTO = new ImageDTO(transactionDTO.getTransactionId(), transactionDTO.getImgUrl(), transactionDTO.isBase64());
+        activeMQ.publish(imageDTO, ActiveMQConfiguration.PROPERTIES_OWN_QUEUE);
     }
 
     public void startActiveMqListener(){
         activeMQ.startListener(new PropertiesListener(this, jmsTemplate));
     }
 
-    @JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
-    public PropertiesTransactionDTO receiveTransactionMessage() throws JMSException, JsonProcessingException {
+    @JmsListener(destination = "properties", containerFactory = "queueConnectionFactory")
+    public ImageDTO receiveTransactionMessage() throws JMSException, JsonProcessingException {
         String message = jmsTemplate.receive(ActiveMQConfiguration.PROPERTIES_OWN_QUEUE).getBody(String.class);
         if(message != null){
-            PropertiesTransactionDTO dto = objectMapper.readValue(message, PropertiesTransactionDTO.class);
+            ImageDTO dto = objectMapper.readValue(message, ImageDTO.class);
             return dto;
         }else {
             return null;
         }
     }
 
-    public PropertiesDTO getPropertiesFromImgUrl() throws JMSException, JsonProcessingException {
-        PropertiesTransactionDTO transactionDTO = receiveTransactionMessage();
-        if(transactionDTO == null){
+    public com.cpe.springboot.dto.queues.PropertiesDTO getPropertiesFromImgUrl() throws JMSException, JsonProcessingException {
+        ImageDTO imageDTO = receiveTransactionMessage();
+        if(imageDTO == null){
             return null;
         }
-        Map<String, Float> properties = ImgToProperties.getPropertiesFromImg(transactionDTO.getImgUrl(), 100f, 5, 0.2f, transactionDTO.isBase64());
-        return new PropertiesDTO(properties.get(ImgToProperties.LABEL_HP),
+        Map<String, Float> properties = ImgToProperties.getPropertiesFromImg(imageDTO.getImgUrl(), 100f, 5, 0.2f, imageDTO.isBase64());
+        return new com.cpe.springboot.dto.queues.PropertiesDTO(imageDTO.transactionId,
+                properties.get(ImgToProperties.LABEL_HP),
                 properties.get(ImgToProperties.LABEL_ENERGY),
                 properties.get(ImgToProperties.LABEL_ATTACK),
                 properties.get(ImgToProperties.LABEL_DEFENSE));

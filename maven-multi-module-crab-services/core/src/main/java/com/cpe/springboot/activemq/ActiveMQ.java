@@ -1,14 +1,11 @@
 package com.cpe.springboot.activemq;
 
-import com.cpe.springboot.dto.GenericMQDTO;
+import com.cpe.springboot.dto.queues.GenericMQDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 public class ActiveMQ {

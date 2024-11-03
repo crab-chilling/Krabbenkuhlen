@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.cpe.springboot.dto.AsyncResponseDTO;
 import com.cpe.springboot.dto.CardDTO;
+import com.cpe.springboot.dto.requests.GenerateCardDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,5 +68,8 @@ public class CardRestController {
 		cardModelService.deleteCardModel(Integer.valueOf(id));
 	}
 
-	
+	@RequestMapping(method = RequestMethod.POST, value = "/card/generate")
+	public AsyncResponseDTO generateCard(@RequestBody GenerateCardDTO generateCardDTO) {
+		cardModelService.generateCard(generateCardDTO);
+	}
 }

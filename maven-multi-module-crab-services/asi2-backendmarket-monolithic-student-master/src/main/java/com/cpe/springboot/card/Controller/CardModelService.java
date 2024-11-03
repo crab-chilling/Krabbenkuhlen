@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import com.cpe.springboot.dto.AsyncResponseDTO;
 import com.cpe.springboot.dto.CardDTO;
+import com.cpe.springboot.dto.requests.GenerateCardDTO;
 import org.springframework.stereotype.Service;
 
 import com.cpe.springboot.card.model.CardModel;
@@ -72,6 +74,10 @@ public class CardModelService {
 
 	public List<CardModel> getAllCardToSell(){
 		return this.cardRepository.findByUser(null);
+	}
+
+	public AsyncResponseDTO generateCard(GenerateCardDTO generateCardDTO) {
+
 	}
 }
 

@@ -11,14 +11,17 @@ public class Image {
 
     private String imageUrl;
 
+    private boolean isBase64;
+
     @OneToOne
     @JoinColumn(name = "transaction_id")
     private Transaction transaction;
 
     public Image() {}
 
-    public Image(String imageUrl) {
+    public Image(String imageUrl, boolean isBase64) {
         this.imageUrl = imageUrl;
+        this.isBase64 = isBase64;
     }
 
     public Integer getId() {
@@ -43,5 +46,13 @@ public class Image {
 
     public void setTransaction(Transaction transaction) {
         this.transaction = transaction;
+    }
+
+    public boolean isBase64() {
+        return isBase64;
+    }
+
+    public void setBase64(boolean base64) {
+        isBase64 = base64;
     }
 }

@@ -2,8 +2,8 @@ package com.cpe.springboot.cardPropertiesService;
 
 import com.cpe.springboot.activemq.ActiveMQListener;
 import com.cpe.springboot.cardPropertiesService.configuration.ActiveMQConfiguration;
-import com.cpe.springboot.cardPropertiesService.dto.PropertiesDTO;
 import com.cpe.springboot.cardPropertiesService.service.PropertiesService;
+import com.cpe.springboot.dto.queues.PropertiesDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.jms.JMSException;
 import lombok.AllArgsConstructor;

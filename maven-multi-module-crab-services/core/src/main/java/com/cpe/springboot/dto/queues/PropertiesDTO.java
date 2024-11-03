@@ -1,6 +1,6 @@
 package com.cpe.springboot.dto.queues;
 
-public class PropertiesDTO extends GenericAsyncTaskDTO {
+public class PropertiesDTO extends GenericMQDTO {
 
     private float hp;
 

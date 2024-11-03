@@ -1,13 +1,14 @@
 package com.cpe.springboot.dto.queues;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import java.io.Serializable;
 
-public abstract class GenericAsyncTaskDTO {
+public abstract class GenericMQDTO implements Serializable {
 
-    private Integer transactionId;
+    public Integer transactionId;
 
-    public GenericAsyncTaskDTO(Integer transactionId) {
+    public GenericMQDTO(){}
+
+    public GenericMQDTO(Integer transactionId) {
         this.transactionId = transactionId;
     }
 

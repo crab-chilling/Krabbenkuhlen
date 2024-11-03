@@ -1,6 +1,6 @@
 package com.cpe.springboot.dto.queues;
 
-public class ImageDTO extends GenericAsyncTaskDTO {
+public class ImageDTO extends GenericMQDTO {
 
     private String imgUrl;
 

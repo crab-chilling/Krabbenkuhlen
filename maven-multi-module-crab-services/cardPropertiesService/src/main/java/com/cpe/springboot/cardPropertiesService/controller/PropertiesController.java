@@ -1,7 +1,7 @@
 package com.cpe.springboot.cardPropertiesService.controller;
 
-import com.cpe.springboot.cardPropertiesService.dto.PropertiesTransactionDTO;
 import com.cpe.springboot.cardPropertiesService.service.PropertiesService;
+import com.cpe.springboot.dto.requests.PropertiesTransactionDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
