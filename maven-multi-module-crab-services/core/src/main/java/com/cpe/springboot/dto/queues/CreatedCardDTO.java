@@ -2,11 +2,13 @@ package com.cpe.springboot.dto.queues;
 
 public class CreatedCardDTO {
 
+    public Integer userId;
+
     public String imageUrl;
 
     public boolean isBase64;
 
-    public String Description;
+    public String description;
 
     public float hp;
 
@@ -16,18 +18,22 @@ public class CreatedCardDTO {
 
     public float defense;
 
+    public float price = 50.0f;
+
     public CreatedCardDTO() {
 
     }
 
-    public CreatedCardDTO(String imageUrl, boolean isBase64, String description, float hp, float energy, float attack, float defense) {
+    public CreatedCardDTO(Integer userId, String imageUrl, boolean isBase64, String description, float hp, float energy, float attack, float defense, float price) {
+        this.userId = userId;
         this.imageUrl = imageUrl;
         this.isBase64 = isBase64;
-        Description = description;
+        this.description = description;
         this.hp = hp;
         this.energy = energy;
         this.attack = attack;
         this.defense = defense;
+        this.price = price;
     }
 
     public String getImageUrl() {
@@ -47,11 +53,11 @@ public class CreatedCardDTO {
     }
 
     public String getDescription() {
-        return Description;
+        return description;
     }
 
     public void setDescription(String description) {
-        Description = description;
+        description = description;
     }
 
     public float getHp() {
@@ -84,5 +90,21 @@ public class CreatedCardDTO {
 
     public void setDefense(float defense) {
         this.defense = defense;
+    }
+
+    public float getPrice() {
+        return price;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }

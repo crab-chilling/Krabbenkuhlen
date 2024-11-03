@@ -15,4 +15,6 @@ public class Constants {
     public static final String ACTIVEMQ_QUEUE_TASK = "tasks";
 
     public static final String ACTIVEMQ_QUEUE_CREATED_CARD = "createdcard";
+
+    public static final float CARD_DEFAULT_PRICE = 50f;
 }

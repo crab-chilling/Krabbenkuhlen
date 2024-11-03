@@ -3,7 +3,6 @@ package com.cpe.springboot.cardPropertiesService.service;
 import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.cardPropertiesService.PropertiesListener;
 import com.cpe.springboot.cardPropertiesService.configuration.ActiveMQConfiguration;
-import com.cpe.springboot.cardPropertiesService.dto.PropertiesDTO;
 import com.cpe.springboot.dto.queues.ImageDTO;
 import com.cpe.springboot.dto.queues.PropertiesDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;

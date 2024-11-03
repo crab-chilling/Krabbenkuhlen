@@ -10,7 +10,6 @@ import com.cpe.springboot.card_generator.card_generator.repository.TransactionRe
 import com.cpe.springboot.dto.AsyncResponseDTO;
 import com.cpe.springboot.dto.enums.Status;
 import com.cpe.springboot.dto.queues.DescriptionDTO;
-import com.cpe.springboot.dto.queues.GenericAsyncTaskDTO;
 import com.cpe.springboot.dto.queues.GenericMQDTO;
 import com.cpe.springboot.dto.queues.ImageDTO;
 import com.cpe.springboot.dto.queues.PropertiesDTO;
