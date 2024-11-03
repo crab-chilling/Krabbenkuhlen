@@ -56,7 +56,7 @@ public class CardModelService {
 		this.objectMapper = objectMapper;
 		this.activeMQ = activeMQ;
 
-		activeMQ.startListener(new GeneratedCardsListener(this));
+		this.activeMQ.startListener(new GeneratedCardsListener(this));
 	}
 	
 	public List<CardModel> getAllCardModel() {
