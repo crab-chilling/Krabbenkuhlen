@@ -1,0 +1,9 @@
+com/cpe/springboot/AsyncWorker/models/ImageRequest.class
+com/cpe/springboot/AsyncWorker/services/PromptService.class
+com/cpe/springboot/AsyncWorker/AsyncWorkerApplication.class
+com/cpe/springboot/AsyncWorker/models/PromptRequest.class
+com/cpe/springboot/AsyncWorker/models/ImageResponse.class
+com/cpe/springboot/AsyncWorker/controllers/AsyncJobController.class
+com/cpe/springboot/AsyncWorker/models/GenerationRequest.class
+com/cpe/springboot/AsyncWorker/models/DescriptionResponse.class
+com/cpe/springboot/AsyncWorker/services/ImageService.class

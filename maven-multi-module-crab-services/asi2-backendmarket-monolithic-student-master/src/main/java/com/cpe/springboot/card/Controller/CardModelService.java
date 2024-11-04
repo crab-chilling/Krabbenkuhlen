@@ -7,20 +7,16 @@ import java.util.Random;
 
 import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.card.listener.GeneratedCardsListener;
-import com.cpe.springboot.dto.AsyncResponseDTO;
 import com.cpe.springboot.dto.CardDTO;
-import com.cpe.springboot.dto.enums.Status;
 import com.cpe.springboot.dto.queues.CreatedCardDTO;
 import com.cpe.springboot.dto.requests.CardGeneratorTransactionDTO;
 import com.cpe.springboot.dto.requests.EmailTransactionDTO;
-import com.cpe.springboot.dto.requests.GenerateCardDTO;
-import com.cpe.springboot.dto.requests.ImageTransactionDTO;
 import com.cpe.springboot.user.controller.UserRepository;
-import com.cpe.springboot.user.controller.UserService;
 import com.cpe.springboot.user.model.UserModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.JMSException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
@@ -108,14 +104,15 @@ public class CardModelService {
 		return this.cardRepository.findByUser(null);
 	}
 
-	public AsyncResponseDTO generateCard(CardGeneratorTransactionDTO cardGeneratorTransactionDTO) {
-		return webClientBuilder.build()
+	public HttpStatus generateCard(CardGeneratorTransactionDTO cardGeneratorTransactionDTO) {
+		return WebClient.builder().build()
 				.post()
 				.uri(URL_CARD_GENERATOR + ENDPOINT_GENERATE_CARD)
 				.bodyValue(cardGeneratorTransactionDTO)
 				.retrieve()
-				.bodyToMono(AsyncResponseDTO.class)
-				.block();
+				.toBodilessEntity()
+				.block()
+				.getStatusCode().isError() ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK;
 	}
 
 	@JmsListener(destination = "createdcard", containerFactory = "queueConnectionFactory")
@@ -144,7 +141,7 @@ public class CardModelService {
 				.uri(URL_NOTIFICATION_SERVICE + ENDPOINT_SEND_EMAIL)
 				.bodyValue(new EmailTransactionDTO(user.getEmail(), "Your card has been generated", "Hello,\nYour card has been generated !"))
 				.retrieve()
-				.bodyToMono(AsyncResponseDTO.class)
+				.toBodilessEntity()
 				.block();
 	}
 }

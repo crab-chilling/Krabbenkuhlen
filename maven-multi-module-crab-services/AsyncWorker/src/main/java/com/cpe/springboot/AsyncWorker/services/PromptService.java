@@ -1,13 +1,19 @@
 package com.cpe.springboot.AsyncWorker.services;
 
+import com.cpe.springboot.AsyncWorker.AsyncListener;
 import com.cpe.springboot.AsyncWorker.models.PromptRequest;
 import com.cpe.springboot.AsyncWorker.models.PromptDto;
+import com.cpe.springboot.activemq.ActiveMQ;
+import com.cpe.springboot.dto.queues.DescriptionDTO;
+import com.cpe.springboot.dto.requests.DescriptionTransactionDTO;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import jakarta.jms.TextMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,8 +29,10 @@ public class PromptService {
     private String apiUrl;
 
     private final WebClient client;
+    private final ActiveMQ activeMQ;
+    private final AsyncListener asyncListener;
 
-    public PromptService() {
+    public PromptService(ActiveMQ activeMQ, AsyncListener asyncListener) {
         HttpClient httpClient =
                 HttpClient.create()
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 300000)
@@ -34,27 +42,19 @@ public class PromptService {
         this.client = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
+        this.activeMQ = activeMQ;
+        this.asyncListener = asyncListener;
+    }
+
+    public void createDesc(DescriptionTransactionDTO descriptionTransactionDTO) {
+        DescriptionDTO descriptionDTO = new DescriptionDTO(descriptionTransactionDTO.getTransactionId(), descriptionTransactionDTO.getDescPrompt());
+        activeMQ.publish(descriptionDTO, "asyncworker");
     }
 
 
-    public void createPrompt(PromptDto req) {
-        PromptRequest forQueue = new PromptRequest(req.getPrompt());
-
-        client.post()
-                .uri(this.apiUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(BodyInserters.fromValue(forQueue))
-                .retrieve()
-                // todo:
-                .bodyToMono(String.class)
-                .subscribe(res -> {
-                    log.info("Publishing to queue");
-                    // todo publish queu
-                }, error -> {
-                    log.error("We are cooked");
-                    // todo publish error
-                });
-
+    @JmsListener(destination = "asyncworker", containerFactory = "queueConnectionFactory")
+    void consumeOwnQueue(TextMessage message) throws Exception {
+        this.asyncListener.doReceive(message, "asyncworker");
     }
 
 }

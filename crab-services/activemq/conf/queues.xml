@@ -1,42 +1,42 @@
 <queues>
-<queue name="asyncworker">
-<stats size="0" consumerCount="0" enqueueCount="0" dequeueCount="0"/>
-<feed>
-<atom>
-queueBrowse/asyncworker?view=rss&amp;feedType=atom_1.0
-</atom>
-<rss>
-queueBrowse/asyncworker?view=rss&amp;feedType=rss_2.0
-</rss>
-</feed>
-</queue>
-<queue name="notifications">
-<stats size="0" consumerCount="0" enqueueCount="0" dequeueCount="0"/>
-<feed>
-<atom>
-queueBrowse/notifications?view=rss&amp;feedType=atom_1.0
-</atom>
-<rss>
-queueBrowse/notifications?view=rss&amp;feedType=rss_2.0
-</rss>
-</feed>
-</queue>
-<queue name="createdcards">
-<stats size="0" consumerCount="0" enqueueCount="0" dequeueCount="0"/>
-<feed>
-<atom>
-queueBrowse/createdcards?view=rss&amp;feedType=atom_1.0
-</atom>
-<rss>
-queueBrowse/createdcards?view=rss&amp;feedType=rss_2.0
-</rss>
-</feed>
-</queue>
-<queue name="tasks">
-<stats size="0" consumerCount="0" enqueueCount="0" dequeueCount="0"/>
-<feed>
-<atom>queueBrowse/tasks?view=rss&amp;feedType=atom_1.0</atom>
-<rss>queueBrowse/tasks?view=rss&amp;feedType=rss_2.0</rss>
-</feed>
-</queue>
+    <queue name="asyncworker">
+        <stats size="0" consumerCount="0" enqueueCount="0" dequeueCount="0" />
+        <feed>
+            <atom>
+                queueBrowse/asyncworker?view=rss&amp;feedType=atom_1.0
+            </atom>
+            <rss>
+                queueBrowse/asyncworker?view=rss&amp;feedType=rss_2.0
+            </rss>
+        </feed>
+    </queue>
+    <queue name="notifications">
+        <stats size="0" consumerCount="0" enqueueCount="0" dequeueCount="0" />
+        <feed>
+            <atom>
+                queueBrowse/notifications?view=rss&amp;feedType=atom_1.0
+            </atom>
+            <rss>
+                queueBrowse/notifications?view=rss&amp;feedType=rss_2.0
+            </rss>
+        </feed>
+    </queue>
+    <queue name="createdcards">
+        <stats size="0" consumerCount="0" enqueueCount="0" dequeueCount="0" />
+        <feed>
+            <atom>
+                queueBrowse/createdcards?view=rss&amp;feedType=atom_1.0
+            </atom>
+            <rss>
+                queueBrowse/createdcards?view=rss&amp;feedType=rss_2.0
+            </rss>
+        </feed>
+    </queue>
+    <queue name="tasks">
+        <stats size="0" consumerCount="0" enqueueCount="0" dequeueCount="0" />
+        <feed>
+            <atom>queueBrowse/tasks?view=rss&amp;feedType=atom_1.0</atom>
+            <rss>queueBrowse/tasks?view=rss&amp;feedType=rss_2.0</rss>
+        </feed>
+    </queue>
 </queues>

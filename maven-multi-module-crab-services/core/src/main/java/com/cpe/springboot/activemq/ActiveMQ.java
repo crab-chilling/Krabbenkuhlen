@@ -20,7 +20,6 @@ public class ActiveMQ {
     }
 
     public <T extends GenericMQDTO> void publish(T genericMQDTO, String queueName) {
-        log.info("[ActiveMQCore] Send message :" + genericMQDTO);
         jmsTemplate.send(queueName, s -> {
             try {
                 TextMessage msg = s.createTextMessage(objectMapper.writeValueAsString(genericMQDTO));
@@ -32,7 +31,6 @@ public class ActiveMQ {
                 throw new RuntimeException(e);
             }
         });
-        log.info("[ActiveMQCore] Message sent");
 
     }
 
