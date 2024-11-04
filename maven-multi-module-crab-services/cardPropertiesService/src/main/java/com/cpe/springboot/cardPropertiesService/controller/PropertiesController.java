@@ -1,6 +1,8 @@
 package com.cpe.springboot.cardPropertiesService.controller;
 
+import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.cardPropertiesService.service.PropertiesService;
+import com.cpe.springboot.dto.queues.ImageDTO;
 import com.cpe.springboot.dto.requests.PropertiesTransactionDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -9,11 +11,10 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class PropertiesController {
 
-    private PropertiesService service;
+    private ActiveMQ activeMQ;
 
     @RequestMapping(method = RequestMethod.POST, value = "/properties")
     public void publishTransaction(@RequestBody PropertiesTransactionDTO transactionDTO){
-        service.startActiveMqListener();
-        service.publish(transactionDTO);
+        activeMQ.publish(new ImageDTO(transactionDTO.getTransactionId(), transactionDTO.getImgUrl(), transactionDTO.isBase64()), "properties");
     }
 }
