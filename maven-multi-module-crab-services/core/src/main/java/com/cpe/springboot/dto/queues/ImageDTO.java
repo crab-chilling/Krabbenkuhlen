@@ -1,9 +1,15 @@
 package com.cpe.springboot.dto.queues;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
+
+@ToString
 public class ImageDTO extends GenericMQDTO {
 
+    @JsonProperty("imgUrl")
     private String imgUrl;
 
+    @JsonProperty("isBase64")
     private boolean isBase64;
 
     public ImageDTO(Integer transactionId, String imgUrl, boolean isBase64) {

@@ -14,14 +14,24 @@ import org.springframework.stereotype.Component;
 public abstract class AbstractJmsListener {
 
     private ObjectMapper objectMapper;
-    private JmsTemplate jmsTemplate;
+    protected JmsTemplate jmsTemplate;
+    protected ActiveMQ activeMQ;
 
     public abstract GenericMQDTO traitementService(Object object);
 
     public void doReceive(TextMessage message, String queue) throws JMSException, ClassNotFoundException, JsonProcessingException {
         String clazz = message.getStringProperty("ObjectType");
+        if(clazz == null){
+            return;
+        }
         Object o = objectMapper.readValue(message.getText(), Class.forName(clazz));
+        if (o == null) {
+            return;
+        }
         GenericMQDTO dto = this.traitementService(o);
-        jmsTemplate.convertAndSend(queue, dto);
+        if (dto == null) {
+            return;
+        }
+        activeMQ.publish(dto, "tasks");
     }
 }

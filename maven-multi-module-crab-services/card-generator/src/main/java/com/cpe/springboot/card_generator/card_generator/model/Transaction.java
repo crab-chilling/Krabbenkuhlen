@@ -1,6 +1,7 @@
 package com.cpe.springboot.card_generator.card_generator.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Cascade;
 
 import java.sql.Timestamp;
 
@@ -19,12 +20,15 @@ public class Transaction {
 
     private java.sql.Timestamp timestamp;
 
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     @OneToOne(mappedBy = "transaction")
     private Properties properties;
 
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     @OneToOne(mappedBy = "transaction")
     private Image image;
 
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     @OneToOne(mappedBy = "transaction")
     private Description description;
 

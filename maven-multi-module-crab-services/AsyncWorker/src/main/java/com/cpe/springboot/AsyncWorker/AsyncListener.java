@@ -5,6 +5,7 @@ import com.cpe.springboot.AsyncWorker.models.ImageRequest;
 import com.cpe.springboot.AsyncWorker.models.PromptDto;
 import com.cpe.springboot.AsyncWorker.models.PromptRequest;
 import com.cpe.springboot.activemq.AbstractJmsListener;
+import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.dto.queues.DescriptionDTO;
 import com.cpe.springboot.dto.queues.GenericMQDTO;
 import com.cpe.springboot.dto.queues.ImageDTO;
@@ -33,8 +34,8 @@ public class AsyncListener extends AbstractJmsListener {
     @Value("${api.url.neural}")
     private String apiUrlNeural;
 
-    public AsyncListener(ObjectMapper objectMapper, JmsTemplate jmsTemplate) {
-        super(objectMapper, jmsTemplate);
+    public AsyncListener(ObjectMapper objectMapper, JmsTemplate jmsTemplate, ActiveMQ activeMQ) {
+        super(objectMapper, jmsTemplate, activeMQ);
         HttpClient httpClient =
                 HttpClient.create()
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 300000)
