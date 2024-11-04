@@ -14,6 +14,32 @@ export const fetchAllCards = async () => {
   return data;
 };
 
+
+export const generateCard = async (
+  userId: number,
+  imagePrompt: string,
+  descPrompt: string) => {
+
+  const resp = await fetch(
+    `${import.meta.env.VITE_APP_API_URL}/card/generate`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId,
+        imagePrompt,
+        descPrompt,
+      }),
+    }
+  );
+
+  if (!resp.ok) throw new Error("An error occured while generating card");
+  return await resp.json();
+
+}
+
 export const fetchUserCards = async (
   cardList: Array<Number>,
 ): Promise<Card[]> => {

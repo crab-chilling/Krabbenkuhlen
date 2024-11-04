@@ -7,7 +7,6 @@ import com.cpe.springboot.card_generator.card_generator.model.Image;
 import com.cpe.springboot.card_generator.card_generator.model.Properties;
 import com.cpe.springboot.card_generator.card_generator.model.Transaction;
 import com.cpe.springboot.card_generator.card_generator.repository.TransactionRepository;
-import com.cpe.springboot.dto.AsyncResponseDTO;
 import com.cpe.springboot.dto.enums.Status;
 import com.cpe.springboot.dto.queues.DescriptionDTO;
 import com.cpe.springboot.dto.queues.GenericMQDTO;
@@ -19,14 +18,17 @@ import com.cpe.springboot.dto.requests.ImageTransactionDTO;
 import com.cpe.springboot.dto.requests.PropertiesTransactionDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import jakarta.jms.JMSException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.cpe.springboot.card_generator.card_generator.common.Constants.*;
@@ -57,37 +59,37 @@ public class CardGeneratorService {
         activeMQ.startListener(new AsyncTasksListener(this, this.jmsTemplate));
     }
 
-    public AsyncResponseDTO generateCard(CardGeneratorTransactionDTO cardGeneratorTransactionDTO) {
+    public HttpStatus generateCard(CardGeneratorTransactionDTO cardGeneratorTransactionDTO) {
 
         Transaction transaction = new Transaction(cardGeneratorTransactionDTO.getUserId(), cardGeneratorTransactionDTO.getImagePrompt(), cardGeneratorTransactionDTO.getDescPrompt());
 
         repository.save(transaction);
 
-        AsyncResponseDTO asyncResponseDTO = webClientBuilder.build()
+        ResponseEntity res = webClientBuilder.build()
                         .post()
                         .uri(URL_ASYNC_WORKER_SERVICE + ENDPOINT_ASYNC_WORKER_IMAGE)
                         .bodyValue(new ImageTransactionDTO(transaction.getUserId(), transaction.getImagePrompt()))
                         .retrieve()
-                        .bodyToMono(AsyncResponseDTO.class)
+                        .toBodilessEntity()
                         .block();
 
-        if (asyncResponseDTO == null || asyncResponseDTO.getStatus() == Status.KO){
-            return new AsyncResponseDTO(Status.KO, "An error occured while trying to generate card image, please try again later.");
+        if (res == null || res.getStatusCode().isError()){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
-        asyncResponseDTO = webClientBuilder.build()
+        res = webClientBuilder.build()
                 .post()
                 .uri(URL_ASYNC_WORKER_SERVICE + ENDPOINT_ASYNC_WORKER_DESCRIPTION)
                 .bodyValue(new DescriptionTransactionDTO(transaction.getUserId(), transaction.getDescPrompt()))
                 .retrieve()
-                .bodyToMono(AsyncResponseDTO.class)
+                .toBodilessEntity()
                 .block();
 
-        if (asyncResponseDTO == null || asyncResponseDTO.getStatus() == Status.KO){
-            return new AsyncResponseDTO(Status.KO, "An error occured while trying to generate card description, please try again later.");
+        if (res == null || res.getStatusCode().isError()){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
-        return new AsyncResponseDTO(Status.OK, "Card generation has started successfully.");
+        return HttpStatus.OK;
     }
 
     @JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
@@ -112,16 +114,16 @@ public class CardGeneratorService {
         transaction.setImage(image);
         repository.save(transaction);
 
-        AsyncResponseDTO asyncResponseDTO = webClientBuilder.build()
+        ResponseEntity asyncResponseDTO = webClientBuilder.build()
                 .post()
                 .uri(URL_PROPERTIES_SERVICE + ENDPOINT_PROPERTIES)
                 .bodyValue(new PropertiesTransactionDTO(transaction.getId(), imageDTO.getImgUrl(), imageDTO.isBase64()))
                 .retrieve()
-                .bodyToMono(AsyncResponseDTO.class)
+                .toBodilessEntity()
                 .block();
 
-        if (asyncResponseDTO == null || asyncResponseDTO.getStatus() == Status.KO){
-            log.error("An error occured while trying to generate card properties : {}.", asyncResponseDTO.getMessage());
+        if (asyncResponseDTO == null || asyncResponseDTO.getStatusCode().isError()){
+            log.error("An error occured while trying to generate card properties : {}.", asyncResponseDTO);
             return null;
         }
 

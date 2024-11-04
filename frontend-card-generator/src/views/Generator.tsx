@@ -7,6 +7,10 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Loader from "../components/Loader";
 import { toast } from "react-toastify";
+import { generateCard } from "../api/card.ts";
+import { useSelector } from "react-redux";
+import { selectUserId } from "../store/selectors/user.selectors";
+
 
 export default function Generator() {
   const [loading, setLoading] = useState(false);
@@ -31,6 +35,10 @@ export default function Generator() {
     try {
       const newCard = { image, description };
       console.log("newCard: ", newCard); // TODO: call the new generation API
+
+      const userId = useSelector(selectUserId);
+
+      await generateCard(userId, newCard.image, newCard.description);
 
       toast.success("The generation of your card has started.");
 

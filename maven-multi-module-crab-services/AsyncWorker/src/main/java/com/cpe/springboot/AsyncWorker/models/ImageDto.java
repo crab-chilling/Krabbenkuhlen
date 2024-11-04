@@ -8,7 +8,6 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 public class ImageDto implements Serializable {
-    private String promptTxt;
-    private String negativePromptTxt;
-    private int transactionId;
+    private String url;
+    private String base64;
 }

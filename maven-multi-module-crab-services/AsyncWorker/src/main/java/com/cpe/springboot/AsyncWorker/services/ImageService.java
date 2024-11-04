@@ -1,13 +1,28 @@
 package com.cpe.springboot.AsyncWorker.services;
 
+import com.cpe.springboot.AsyncWorker.AsyncListener;
 import com.cpe.springboot.AsyncWorker.models.ImageDto;
 import com.cpe.springboot.AsyncWorker.models.ImageRequest;
+import com.cpe.springboot.AsyncWorker.models.PromptDto;
+import com.cpe.springboot.AsyncWorker.models.PromptRequest;
+import com.cpe.springboot.activemq.ActiveMQ;
+import com.cpe.springboot.dto.queues.DescriptionDTO;
+import com.cpe.springboot.dto.queues.GenericMQDTO;
+import com.cpe.springboot.dto.queues.ImageDTO;
+import com.cpe.springboot.dto.requests.DescriptionTransactionDTO;
+import com.cpe.springboot.dto.requests.ImageTransactionDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
@@ -22,8 +37,11 @@ public class ImageService {
     private String apiUrl;
 
     private final WebClient client;
+    private final ActiveMQ activeMQ;
+    private final AsyncListener asyncListener;
 
-    public ImageService() {
+
+    public ImageService(ActiveMQ activeMQ, AsyncListener asyncListener) {
         HttpClient httpClient =
                 HttpClient.create()
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 300000)
@@ -33,25 +51,18 @@ public class ImageService {
         this.client = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
+        this.activeMQ = activeMQ;
+        this.asyncListener = asyncListener;
     }
 
-    public void createImage(ImageDto imgRequest) {
-        ImageRequest forQueue = new ImageRequest(imgRequest.getPromptTxt(), imgRequest.getNegativePromptTxt());
+    public void createImage(ImageTransactionDTO imageTransactionDTO) {
+        ImageDTO imageDto = new ImageDTO(imageTransactionDTO.getTransactionId(), imageTransactionDTO.getImagePrompt(), true);
+        activeMQ.publish(imageDto, "asyncworker");
+    }
 
-        client.post()
-                .uri(this.apiUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(forQueue, ImageRequest.class)
-                .retrieve()
-                // todo:
-                .bodyToMono(String.class)
-                .subscribe(res -> {
-                    log.info("Publishing to queue");
-                    // todo publish queu
-                }, error -> {
-                    log.error("We are cooked");
-                    // todo publish error
-                });
+    @JmsListener(destination = "asyncworker", containerFactory = "queueConnectionFactory")
+    void consumeOwnQueue(TextMessage message) throws Exception {
+        this.asyncListener.doReceive(message, "asyncworker");
     }
 
 }
