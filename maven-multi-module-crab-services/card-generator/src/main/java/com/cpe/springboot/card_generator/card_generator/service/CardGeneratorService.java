@@ -2,35 +2,23 @@ package com.cpe.springboot.card_generator.card_generator.service;
 
 import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.card_generator.card_generator.listener.AsyncTasksListener;
-import com.cpe.springboot.card_generator.card_generator.model.Description;
-import com.cpe.springboot.card_generator.card_generator.model.Image;
-import com.cpe.springboot.card_generator.card_generator.model.Properties;
 import com.cpe.springboot.card_generator.card_generator.model.Transaction;
 import com.cpe.springboot.card_generator.card_generator.repository.TransactionRepository;
-import com.cpe.springboot.dto.enums.Status;
-import com.cpe.springboot.dto.queues.DescriptionDTO;
-import com.cpe.springboot.dto.queues.GenericMQDTO;
-import com.cpe.springboot.dto.queues.ImageDTO;
-import com.cpe.springboot.dto.queues.PropertiesDTO;
 import com.cpe.springboot.dto.requests.CardGeneratorTransactionDTO;
 import com.cpe.springboot.dto.requests.DescriptionTransactionDTO;
 import com.cpe.springboot.dto.requests.ImageTransactionDTO;
-import com.cpe.springboot.dto.requests.PropertiesTransactionDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.Objects;
-import java.util.Optional;
 
 import static com.cpe.springboot.card_generator.card_generator.common.Constants.*;
 
@@ -65,7 +53,7 @@ public class CardGeneratorService {
 
         Transaction transaction = new Transaction(cardGeneratorTransactionDTO.getUserId(), cardGeneratorTransactionDTO.getImagePrompt(), cardGeneratorTransactionDTO.getDescPrompt());
 
-        repository.save(transaction);
+        transaction = repository.saveAndFlush(transaction);
 
         ResponseEntity res = webClientBuilder.build()
                         .post()
@@ -100,6 +88,7 @@ public class CardGeneratorService {
         return HttpStatus.OK;
     }
 
+    @Transactional
     @JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
     public void receiveTransactionMessage(TextMessage message) throws JMSException, JsonProcessingException, ClassNotFoundException {
         log.info("Receiving transaction message.");

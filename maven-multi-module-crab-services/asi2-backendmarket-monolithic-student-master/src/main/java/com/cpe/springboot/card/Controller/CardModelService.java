@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import com.cpe.springboot.card.listener.TaskListener;
 import com.cpe.springboot.dto.CardDTO;
 import com.cpe.springboot.dto.queues.CreatedCardDTO;
 import com.cpe.springboot.dto.requests.CardGeneratorTransactionDTO;
@@ -14,6 +15,7 @@ import com.cpe.springboot.user.model.UserModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
@@ -33,6 +35,7 @@ public class CardModelService {
 	private Random rand;
 	private WebClient.Builder webClientBuilder;
 	private ObjectMapper objectMapper;
+	private TaskListener taskListener;
 
 	private final static String URL_CARD_GENERATOR = "http://localhost:8082";
 	private final static String ENDPOINT_GENERATE_CARD = "/generate";
@@ -40,13 +43,16 @@ public class CardModelService {
 	private final static String URL_NOTIFICATION_SERVICE = "http://localhost:8091";
 	private final static String ENDPOINT_SEND_EMAIL = "/send/mail";
 
-	public CardModelService(UserRepository userRepository, CardModelRepository cardRepository, CardReferenceService cardRefService, JmsTemplate jmsTemplate, ObjectMapper objectMapper) {
+	public CardModelService(UserRepository userRepository, CardModelRepository cardRepository,
+							CardReferenceService cardRefService, JmsTemplate jmsTemplate,
+							ObjectMapper objectMapper, TaskListener taskListener) {
 		this.rand=new Random();
 		this.userRepository = userRepository;// Dependencies injection by constructor
 		this.cardRepository=cardRepository;
 		this.cardRefService=cardRefService;
 		this.jmsTemplate = jmsTemplate;
 		this.objectMapper = objectMapper;
+		this.taskListener =  taskListener;
 	}
 	
 	public List<CardModel> getAllCardModel() {
@@ -110,33 +116,8 @@ public class CardModelService {
 	}
 
 	@JmsListener(destination = "createdcard", containerFactory = "queueConnectionFactory")
-	public void proceedGeneratedCardMessage() throws JMSException, JsonProcessingException {
-		String message = jmsTemplate.receive(ACTIVEMQ_QUEUE_CREATED_CARD).getBody(String.class);
-		if (message == null) {
-			return;
-		}
-		CreatedCardDTO createdCardDTO = objectMapper.readValue(message, CreatedCardDTO.class);
-
-		Optional<UserModel> o_userModel = userRepository.findById(createdCardDTO.userId);
-		if (o_userModel.isEmpty()) {
-			return;
-		}
-
-		UserModel user = o_userModel.get();
-		CardModel card = new CardModel("Jack l'éventreur", createdCardDTO.getDescription(), null, null, createdCardDTO.getEnergy(), createdCardDTO.getHp(),
-				createdCardDTO.getDefense(), createdCardDTO.getAttack(), createdCardDTO.getImageUrl(), createdCardDTO.getImageUrl(), createdCardDTO.getPrice());
-		cardRepository.save(card);
-
-		user.addCard(card);
-		userRepository.save(user);
-
-		webClientBuilder.build()
-				.post()
-				.uri(URL_NOTIFICATION_SERVICE + ENDPOINT_SEND_EMAIL)
-				.bodyValue(new EmailTransactionDTO(user.getEmail(), "Your card has been generated", "Hello,\nYour card has been generated !"))
-				.retrieve()
-				.toBodilessEntity()
-				.block();
+	public void proceedGeneratedCardMessage(TextMessage message) throws JMSException, JsonProcessingException, ClassNotFoundException {
+		taskListener.doReceive(message, null);
 	}
 }
 

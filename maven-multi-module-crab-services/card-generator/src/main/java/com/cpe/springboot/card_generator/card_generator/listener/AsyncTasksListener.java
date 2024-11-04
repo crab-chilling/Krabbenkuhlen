@@ -51,11 +51,12 @@ public class AsyncTasksListener extends AbstractJmsListener {
         }
 
         log.info("[AsyncTasksListener] IsCardComplete {}", transaction);
-        log.info("IsCardComplete {}", internalCardService.isCardComplete(transaction));
         if (transaction != null && internalCardService.isCardComplete(transaction)) {
-            super.jmsTemplate.convertAndSend(ACTIVEMQ_QUEUE_CREATED_CARD, new CreatedCardDTO(transaction.getUserId(), transaction.getImage().getImageUrl(), transaction.getImage().isBase64(),
-                    transaction.getDescription().getDescription(), transaction.getProperties().getHp(), transaction.getProperties().getEnergy(), transaction.getProperties().getAttack(),
-                    transaction.getProperties().getDefense(), CARD_DEFAULT_PRICE));
+            CreatedCardDTO c = new CreatedCardDTO(transaction.getUserId(), transaction.getImageUrl(), transaction.isBase64(),
+                    transaction.getDescription(), transaction.getHp(), transaction.getEnergy(), transaction.getAttack(),
+                    transaction.getDefense(), CARD_DEFAULT_PRICE);
+            c.transactionId = transaction.getId();
+            this.activeMQ.publish(c, ACTIVEMQ_QUEUE_CREATED_CARD);
         }
         return null;
     }

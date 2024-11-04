@@ -1,8 +1,5 @@
 package com.cpe.springboot.card_generator.card_generator.service;
 
-import com.cpe.springboot.card_generator.card_generator.model.Description;
-import com.cpe.springboot.card_generator.card_generator.model.Image;
-import com.cpe.springboot.card_generator.card_generator.model.Properties;
 import com.cpe.springboot.card_generator.card_generator.model.Transaction;
 import com.cpe.springboot.card_generator.card_generator.repository.TransactionRepository;
 import com.cpe.springboot.dto.queues.DescriptionDTO;
@@ -38,11 +35,10 @@ public class InternalCardService {
             return null;
         }
 
-        Image image = new Image(imageDTO.getImgUrl(), imageDTO.isBase64());
-
         Transaction transaction = o_transaction.get();
-        transaction.setImage(image);
-        repository.save(transaction);
+        transaction.setImageUrl(imageDTO.getImgUrl());
+        transaction.setBase64(imageDTO.isBase64());
+        transaction = repository.saveAndFlush(transaction);
 
         log.info("Sending properties request for transaction {}.", imageDTO.getTransactionId());
 
@@ -69,17 +65,15 @@ public class InternalCardService {
             return null;
         }
 
-        Description description = new Description(descriptionDTO.getDescription());
-
         Transaction transaction = o_transaction.get();
-        transaction.setDescription(description);
-        repository.save(transaction);
+        transaction.setDescription(descriptionDTO.getDescription());
+        transaction = repository.saveAndFlush(transaction);
 
         return transaction;
     }
 
     public boolean isCardComplete(Transaction transaction) {
-        if (transaction.getImage() != null && transaction.getDescription() != null && transaction.getProperties() != null) {
+        if (transaction.getImageUrl() != null && transaction.getDescription() != null && transaction.getHp() != 0 && transaction.getEnergy() != 0 && transaction.getAttack() != 0 && transaction.getDefense() != 0) {
             return true;
         }
         return false;
@@ -92,11 +86,12 @@ public class InternalCardService {
             return null;
         }
 
-        Properties properties = new Properties(propertiesDTO.getHp(), propertiesDTO.getEnergy(), propertiesDTO.getAttack(), propertiesDTO.getDefense());
-
         Transaction transaction = o_transaction.get();
-        transaction.setProperties(properties);
-        repository.save(transaction);
+        transaction.setHp(propertiesDTO.getHp());
+        transaction.setEnergy(propertiesDTO.getEnergy());
+        transaction.setAttack(propertiesDTO.getAttack());
+        transaction.setDefense(propertiesDTO.getDefense());
+        transaction = repository.saveAndFlush(transaction);
 
         return transaction;
     }

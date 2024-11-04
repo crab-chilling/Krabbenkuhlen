@@ -27,7 +27,7 @@ public class PropertiesService {
 
 
     public com.cpe.springboot.dto.queues.PropertiesDTO getPropertiesFromImgUrl(ImageDTO imageDTO) throws JMSException, JsonProcessingException {
-        Map<String, Float> properties = ImgToProperties.getPropertiesFromImg(imageDTO.getImgUrl(), 100f, 5, 0.2f, imageDTO.isBase64());
+        Map<String, Float> properties = ImgToProperties.getPropertiesFromImg("http://localhost:8080/imgs/default-2.jpg", 100f, 5, 0.2f, imageDTO.isBase64());
         return new com.cpe.springboot.dto.queues.PropertiesDTO(imageDTO.transactionId,
                 properties.get(ImgToProperties.LABEL_HP),
                 properties.get(ImgToProperties.LABEL_ENERGY),
