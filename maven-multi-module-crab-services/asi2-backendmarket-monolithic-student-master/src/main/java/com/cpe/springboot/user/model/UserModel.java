@@ -9,12 +9,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 @Entity
 @JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
@@ -33,7 +28,7 @@ public class UserModel implements Serializable {
 
 
 	@OneToMany(cascade = CascadeType.ALL,
-			mappedBy = "user")
+			mappedBy = "user", fetch = FetchType.EAGER)
 	//@OneToMany(mappedBy = "user")
 	private Set<CardModel> cardList = new HashSet<>();
 
