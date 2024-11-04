@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -31,8 +32,9 @@ public class PromptService {
     private final WebClient client;
     private final ActiveMQ activeMQ;
     private final AsyncListener asyncListener;
+    private final JmsTemplate jmsTemplate;
 
-    public PromptService(ActiveMQ activeMQ, AsyncListener asyncListener) {
+    public PromptService(ActiveMQ activeMQ, AsyncListener asyncListener, JmsTemplate jmsTemplate) {
         HttpClient httpClient =
                 HttpClient.create()
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 300000)
@@ -44,16 +46,21 @@ public class PromptService {
                 .build();
         this.activeMQ = activeMQ;
         this.asyncListener = asyncListener;
+        this.jmsTemplate = jmsTemplate;
     }
 
     public void createDesc(DescriptionTransactionDTO descriptionTransactionDTO) {
+        log.info("[PromptService] Sending description to Ollama");
         DescriptionDTO descriptionDTO = new DescriptionDTO(descriptionTransactionDTO.getTransactionId(), descriptionTransactionDTO.getDescPrompt());
         activeMQ.publish(descriptionDTO, "asyncworker");
+        //jmsTemplate.convertAndSend("asyncworker", descriptionDTO);
     }
 
 
     @JmsListener(destination = "asyncworker", containerFactory = "queueConnectionFactory")
     void consumeOwnQueue(TextMessage message) throws Exception {
+        log.info("[PromptService] Consuming own queue");
+        log.info("[PromptService] Sending description {}", message.getText());
         this.asyncListener.doReceive(message, "asyncworker");
     }
 

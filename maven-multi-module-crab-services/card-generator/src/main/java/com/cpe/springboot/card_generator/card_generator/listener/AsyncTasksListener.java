@@ -1,66 +1,62 @@
 package com.cpe.springboot.card_generator.card_generator.listener;
 
+import com.cpe.springboot.activemq.AbstractJmsListener;
+import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.activemq.ActiveMQListener;
 import com.cpe.springboot.card_generator.card_generator.model.Transaction;
 import com.cpe.springboot.card_generator.card_generator.service.CardGeneratorService;
+import com.cpe.springboot.card_generator.card_generator.service.InternalCardService;
 import com.cpe.springboot.dto.CardDTO;
 import com.cpe.springboot.dto.queues.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.JMSException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.query.criteria.JpaRoot;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Component;
 
 import static com.cpe.springboot.card_generator.card_generator.common.Constants.ACTIVEMQ_QUEUE_CREATED_CARD;
 import static com.cpe.springboot.card_generator.card_generator.common.Constants.CARD_DEFAULT_PRICE;
 
-@AllArgsConstructor
 @Slf4j
-public class AsyncTasksListener extends ActiveMQListener {
+@Component
+public class AsyncTasksListener extends AbstractJmsListener {
 
-    private CardGeneratorService cardGeneratorService;
+    private InternalCardService internalCardService;
 
-    private JmsTemplate jmsTemplate;
+    public AsyncTasksListener(ObjectMapper objectMapper, JmsTemplate jmsTemplate, InternalCardService internalCardService, ActiveMQ activeMQ) {
+        super(objectMapper, jmsTemplate, activeMQ);
+        this.internalCardService = internalCardService;
+    }
 
     @Override
-    public void performAction() {
+    public GenericMQDTO traitementService(Object object) {
         log.info("[AsyncTasksListener] Asynchronous tasks listener starting.");
-        while(true) {
-            GenericMQDTO genericMQDTO = null;
-            try  {
-                genericMQDTO = cardGeneratorService.receiveTransactionMessage();
-            } catch (JMSException e) {
-                throw new RuntimeException(e);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+        Transaction transaction = null;
 
-            if (genericMQDTO == null) {
-                continue;
-            }
+        if (object instanceof ImageDTO) {
 
-            Transaction transaction = null;
+            transaction = internalCardService.proceedImageMessage((ImageDTO) object);
 
-            if (genericMQDTO instanceof ImageDTO) {
+        } else if (object instanceof DescriptionDTO) {
 
-                transaction = cardGeneratorService.proceedImageMessage((ImageDTO) genericMQDTO);
+            transaction = internalCardService.proceedDescriptionMessage((DescriptionDTO) object);
 
-            } else if (genericMQDTO instanceof DescriptionDTO) {
+        } else if (object instanceof PropertiesDTO) {
 
-                transaction = cardGeneratorService.proceedDescriptionMessage((DescriptionDTO) genericMQDTO);
+            transaction = internalCardService.proceedPropertiesMessage((PropertiesDTO) object);
 
-            } else if (genericMQDTO instanceof PropertiesDTO) {
-
-                transaction = cardGeneratorService.proceedPropertiesMessage((PropertiesDTO) genericMQDTO);
-                
-            }
-
-            if (transaction != null && cardGeneratorService.isCardComplete(transaction)) {
-                jmsTemplate.convertAndSend(ACTIVEMQ_QUEUE_CREATED_CARD, new CreatedCardDTO(transaction.getUserId(), transaction.getImage().getImageUrl(), transaction.getImage().isBase64(),
-                        transaction.getDescription().getDescription(), transaction.getProperties().getHp(), transaction.getProperties().getEnergy(), transaction.getProperties().getAttack(),
-                        transaction.getProperties().getDefense(), CARD_DEFAULT_PRICE));
-            }
         }
+
+        log.info("[AsyncTasksListener] IsCardComplete {}", transaction);
+        log.info("IsCardComplete {}", internalCardService.isCardComplete(transaction));
+        if (transaction != null && internalCardService.isCardComplete(transaction)) {
+            super.jmsTemplate.convertAndSend(ACTIVEMQ_QUEUE_CREATED_CARD, new CreatedCardDTO(transaction.getUserId(), transaction.getImage().getImageUrl(), transaction.getImage().isBase64(),
+                    transaction.getDescription().getDescription(), transaction.getProperties().getHp(), transaction.getProperties().getEnergy(), transaction.getProperties().getAttack(),
+                    transaction.getProperties().getDefense(), CARD_DEFAULT_PRICE));
+        }
+        return null;
     }
 }

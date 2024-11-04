@@ -19,6 +19,7 @@ import com.cpe.springboot.dto.requests.PropertiesTransactionDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -47,19 +48,20 @@ public class CardGeneratorService {
     private ActiveMQ activeMQ;
 
     private ObjectMapper objectMapper;
+    private AsyncTasksListener asyncTasksListener;
 
-    public CardGeneratorService(WebClient.Builder webClientBuilder, TransactionRepository repository, JmsTemplate jmsTemplate, ActiveMQ activeMQ, ObjectMapper objectMapper) {
+    public CardGeneratorService(WebClient.Builder webClientBuilder, TransactionRepository repository, JmsTemplate jmsTemplate, ActiveMQ activeMQ, ObjectMapper objectMapper, AsyncTasksListener asyncTasksListener) {
 
         this.webClientBuilder = webClientBuilder;
         this.repository = repository;
         this.jmsTemplate = jmsTemplate;
         this.activeMQ = activeMQ;
         this.objectMapper = objectMapper;
-
-        activeMQ.startListener(new AsyncTasksListener(this, this.jmsTemplate));
+        this.asyncTasksListener = asyncTasksListener;
     }
 
     public HttpStatus generateCard(CardGeneratorTransactionDTO cardGeneratorTransactionDTO) {
+        log.info("Generating card for user {}.", cardGeneratorTransactionDTO.getUserId());
 
         Transaction transaction = new Transaction(cardGeneratorTransactionDTO.getUserId(), cardGeneratorTransactionDTO.getImagePrompt(), cardGeneratorTransactionDTO.getDescPrompt());
 
@@ -73,7 +75,10 @@ public class CardGeneratorService {
                         .toBodilessEntity()
                         .block();
 
+        log.info("Response1 : {}.", res);
+
         if (res == null || res.getStatusCode().isError()){
+            log.info("1 An error occured while trying to generate card image : {}.", res);
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
@@ -85,7 +90,10 @@ public class CardGeneratorService {
                 .toBodilessEntity()
                 .block();
 
+        log.info("Response2 : {}.", res);
+
         if (res == null || res.getStatusCode().isError()){
+            log.info("2 An error occured while trying to generate card description : {}.", res);
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
@@ -93,78 +101,11 @@ public class CardGeneratorService {
     }
 
     @JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
-    public GenericMQDTO receiveTransactionMessage() throws JMSException, JsonProcessingException {
-        String message = jmsTemplate.receive(ACTIVEMQ_QUEUE_TASK).getBody(String.class);
-        if(message != null){
-            return objectMapper.readValue(message, GenericMQDTO.class);
-        }else {
-            return null;
-        }
-    }
-
-    public Transaction proceedImageMessage(ImageDTO imageDTO) {
-        Optional<Transaction> o_transaction = repository.findById(imageDTO.getTransactionId());
-        if (o_transaction.isEmpty()) {
-            return null;
-        }
-
-        Image image = new Image(imageDTO.getImgUrl(), imageDTO.isBase64());
-
-        Transaction transaction = o_transaction.get();
-        transaction.setImage(image);
-        repository.save(transaction);
-
-        ResponseEntity asyncResponseDTO = webClientBuilder.build()
-                .post()
-                .uri(URL_PROPERTIES_SERVICE + ENDPOINT_PROPERTIES)
-                .bodyValue(new PropertiesTransactionDTO(transaction.getId(), imageDTO.getImgUrl(), imageDTO.isBase64()))
-                .retrieve()
-                .toBodilessEntity()
-                .block();
-
-        if (asyncResponseDTO == null || asyncResponseDTO.getStatusCode().isError()){
-            log.error("An error occured while trying to generate card properties : {}.", asyncResponseDTO);
-            return null;
-        }
-
-        return transaction;
-    }
-
-    public Transaction proceedDescriptionMessage(DescriptionDTO descriptionDTO) {
-        Optional<Transaction> o_transaction = repository.findById(descriptionDTO.getTransactionId());
-        if (o_transaction.isEmpty()) {
-            return null;
-        }
-
-        Description description = new Description(descriptionDTO.getDescription());
-
-        Transaction transaction = o_transaction.get();
-        transaction.setDescription(description);
-        repository.save(transaction);
-
-        return transaction;
-    }
-
-    public boolean isCardComplete(Transaction transaction) {
-        if (transaction.getImage() != null && transaction.getDescription() != null && transaction.getProperties() != null) {
-            return true;
-        }
-        return false;
-    }
-
-    public Transaction proceedPropertiesMessage(PropertiesDTO propertiesDTO) {
-        Optional<Transaction> o_transaction = repository.findById(propertiesDTO.getTransactionId());
-        if (o_transaction.isEmpty()) {
-            return null;
-        }
-
-        Properties properties = new Properties(propertiesDTO.getHp(), propertiesDTO.getEnergy(), propertiesDTO.getAttack(), propertiesDTO.getDefense());
-
-        Transaction transaction = o_transaction.get();
-        transaction.setProperties(properties);
-        repository.save(transaction);
-
-        return transaction;
+    public void receiveTransactionMessage(TextMessage message) throws JMSException, JsonProcessingException, ClassNotFoundException {
+        log.info("Receiving transaction message.");
+        //TextMessage message = jmsTemplate.receive(ACTIVEMQ_QUEUE_TASK)
+        log.info("Received message : {}.", message);
+        this.asyncTasksListener.doReceive(message, ACTIVEMQ_QUEUE_TASK);
     }
 
 }

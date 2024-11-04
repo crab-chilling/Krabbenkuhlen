@@ -39,7 +39,9 @@ public class PropertiesService {
 
     @JmsListener(destination = "properties", containerFactory = "queueConnectionFactory")
     public ImageDTO receiveTransactionMessage() throws JMSException, JsonProcessingException {
+        log.info("Receiving message from properties queue");
         String message = jmsTemplate.receive(ActiveMQConfiguration.PROPERTIES_OWN_QUEUE).getBody(String.class);
+        log.info("Message received from properties queue: {}", message);
         if(message != null){
             ImageDTO dto = objectMapper.readValue(message, ImageDTO.class);
             return dto;
@@ -49,7 +51,9 @@ public class PropertiesService {
     }
 
     public com.cpe.springboot.dto.queues.PropertiesDTO getPropertiesFromImgUrl() throws JMSException, JsonProcessingException {
+        log.info("Getting properties from image");
         ImageDTO imageDTO = receiveTransactionMessage();
+        log.info("Image received: {}", imageDTO);
         if(imageDTO == null){
             return null;
         }

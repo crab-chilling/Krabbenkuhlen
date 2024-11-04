@@ -39,9 +39,10 @@ public class ImageService {
     private final WebClient client;
     private final ActiveMQ activeMQ;
     private final AsyncListener asyncListener;
+    private final JmsTemplate jmsTemplate;
 
 
-    public ImageService(ActiveMQ activeMQ, AsyncListener asyncListener) {
+    public ImageService(ActiveMQ activeMQ, AsyncListener asyncListener, JmsTemplate jmsTemplate) {
         HttpClient httpClient =
                 HttpClient.create()
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 300000)
@@ -53,15 +54,20 @@ public class ImageService {
                 .build();
         this.activeMQ = activeMQ;
         this.asyncListener = asyncListener;
+        this.jmsTemplate = jmsTemplate;
     }
 
     public void createImage(ImageTransactionDTO imageTransactionDTO) {
+        log.info("Creating image");
         ImageDTO imageDto = new ImageDTO(imageTransactionDTO.getTransactionId(), imageTransactionDTO.getImagePrompt(), true);
         activeMQ.publish(imageDto, "asyncworker");
+        //jmsTemplate.convertAndSend("asyncworker", imageDto);
     }
 
     @JmsListener(destination = "asyncworker", containerFactory = "queueConnectionFactory")
     void consumeOwnQueue(TextMessage message) throws Exception {
+        log.info("Consuming own queue");
+        log.info("Content: {}", message.getText());
         this.asyncListener.doReceive(message, "asyncworker");
     }
 
