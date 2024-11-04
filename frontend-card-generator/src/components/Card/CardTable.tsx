@@ -7,16 +7,29 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import TablePagination from "@mui/material/TablePagination";
-import { useState } from "react";
+import Checkbox from "@mui/material/Checkbox";
+import { useState, useEffect } from "react";
 
 interface Props {
   cards: Array<Card>;
-  onSelectCard: Function;
+  onSelectCard?: (card: Card) => void;
+  enableRowSelection?: boolean;
+  onSelectionChange?: (selectedIds: number[]) => void;
 }
 
-export default function CardTable({ cards, onSelectCard }: Props) {
+export default function CardTable({
+  cards,
+  onSelectCard = () => {},
+  enableRowSelection = false,
+  onSelectionChange = () => {},
+}: Props) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selection, setSelection] = useState<number[]>([]);
+
+  useEffect(() => {
+    onSelectionChange(selection);
+  }, [selection, onSelectionChange]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -29,12 +42,23 @@ export default function CardTable({ cards, onSelectCard }: Props) {
     setPage(0);
   };
 
+  const handleSelectRow = (id: number) => {
+    setSelection((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((item) => item !== id)
+        : [...prevSelected, id],
+    );
+  };
+
+  const isSelected = (id: number) => selection.includes(id);
+
   return (
     <Paper>
       <TableContainer>
         <Table>
           <TableHead sx={{ backgroundColor: "#ff6d4e", color: "#ffffff" }}>
             <TableRow>
+              {enableRowSelection && <TableCell padding="checkbox"></TableCell>}
               <TableCell>ID</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Family</TableCell>
@@ -54,7 +78,16 @@ export default function CardTable({ cards, onSelectCard }: Props) {
                   onClick={() => onSelectCard(card)}
                   hover
                   sx={{ cursor: "pointer" }}
+                  selected={isSelected(card.id)}
                 >
+                  {enableRowSelection && (
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={isSelected(card.id)}
+                        onChange={() => handleSelectRow(card.id)}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell>{card.id}</TableCell>
                   <TableCell>{card.name}</TableCell>
                   <TableCell>{card.family}</TableCell>

@@ -15,6 +15,9 @@ import Market from "./views/Market";
 import { ToastContainer } from "react-toastify";
 import Inventory from "./views/Inventory";
 import Generator from "./views/Generator";
+import Play from "./views/Play";
+import Room from "./views/Room";
+import Lobby from "./views/Lobby";
 
 function App() {
   return (
@@ -35,6 +38,12 @@ function App() {
           </Route>
           <Route element={<PrivateRoute />}>
             <Route path="/generator" element={<Generator />} />
+          </Route>
+          <Route element={<PrivateRoute />}>
+            <Route path="/lobby" element={<Lobby />} />
+          </Route>
+          <Route element={<PrivateRoute />}>
+            <Route path="/room/:id" element={<Room />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

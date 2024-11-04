@@ -54,3 +54,17 @@ export const fetchUserInfoById = async (id: number) => {
   const data = await response.json();
   return data;
 };
+
+export const fetchAllUsers = async () => {
+  const response = await fetch(import.meta.env.VITE_APP_API_URL + `/users`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) throw new Error("An error occured while fetching data");
+
+  const data = await response.json();
+  return data;
+};
