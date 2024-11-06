@@ -18,28 +18,23 @@ class ChatService {
     return Object.keys(this.activeSockets);
   }
 
-  sendMessageToAll(io, message, fromUserId) {
-    const fromSocketId = this.activeSockets[fromUserId]?.socketId;
-    if (fromSocketId) {
-      io.emit("receive-message", { message, from: fromSocketId });
-    }
-
-    this.saveMessage(message, fromSocketId, null);
+  sendMessageToAll(io, message) {
+    io.emit("receive-message", message);
+    this.saveMessage(message);
   }
 
-  sendMessageToUser(io, targetUserId, message, fromUserId) {
-    const targetSocketId = this.activeSockets[targetUserId]?.socketId;
+  sendMessageToUser(io, message) {
+    const targetSocketId = this.activeSockets[message.to]?.socketId;
     if (targetSocketId) {
-      io.to(targetSocketId).emit("receive-message", {
-        message,
-        from: fromUserId,
-      });
+      io.to(targetSocketId).emit("receive-message", message);
     }
 
-    this.saveMessage(message, fromUserId, targetUserId);
+    this.saveMessage(message);
   }
 
-  async saveMessage(message, fromUserId, toUserId) {
+  async saveMessage(message) {
+    return;
+    // TODO: create the Spring API then adapt this call
     try {
       const payload = {
         message,

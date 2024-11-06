@@ -8,15 +8,10 @@ export default function (io) {
     ChatService.addUser(userId, socket.id);
     socket.emit("connected-users", ChatService.getConnectedUsers());
 
-    socket.on("send-message-to-all", (message) => {
-      console.log("Message to all users:", message);
-      ChatService.sendMessageToAll(io, message, userId);
-    });
-
-    socket.on("send-message-to-user", (data) => {
-      const { targetUserId, message } = data;
-      console.log(`Message to user ${targetUserId}:`, message);
-      ChatService.sendMessageToUser(io, targetUserId, message, userId);
+    socket.on("send-message", (message) => {
+      console.log("Message:", message);
+      if (message.to) ChatService.sendMessageToUser(io, message);
+      else ChatService.sendMessageToAll(io, message);
     });
 
     socket.on("disconnect", () => {
