@@ -6,39 +6,45 @@ class ChatService {
     this.messageHistoryApiUrl = "http://localhost:8082/api/chat";
   }
 
-  addUser(socketId) {
-    this.activeSockets[socketId] = { socketId };
+  addUser(userId, socketId) {
+    this.activeSockets[userId] = { socketId };
   }
 
-  removeUser(socketId) {
-    delete this.activeSockets[socketId];
+  removeUser(userId) {
+    delete this.activeSockets[userId];
   }
 
   getConnectedUsers() {
     return Object.keys(this.activeSockets);
   }
 
-  sendMessageToAll(io, message, fromSocketId) {
-    io.emit("receive-message", { message, from: fromSocketId });
+  sendMessageToAll(io, message, fromUserId) {
+    const fromSocketId = this.activeSockets[fromUserId]?.socketId;
+    if (fromSocketId) {
+      io.emit("receive-message", { message, from: fromSocketId });
+    }
+
     this.saveMessage(message, fromSocketId, null);
   }
 
-  sendMessageToUser(io, targetSocketId, message, fromSocketId) {
-    if (this.activeSockets[targetSocketId]) {
+  sendMessageToUser(io, targetUserId, message, fromUserId) {
+    const targetSocketId = this.activeSockets[targetUserId]?.socketId;
+    if (targetSocketId) {
       io.to(targetSocketId).emit("receive-message", {
         message,
-        from: fromSocketId,
+        from: fromUserId,
       });
-      this.saveMessage(message, fromSocketId, targetSocketId);
     }
+
+    this.saveMessage(message, fromUserId, targetUserId);
   }
 
-  async saveMessage(message, fromSocketId, toSocketId) {
+  async saveMessage(message, fromUserId, toUserId) {
     try {
       const payload = {
         message,
-        fromSocketId,
-        toSocketId: toSocketId || null,
+        fromUserId,
+        toUserId: toUserId || null,
         timestamp: new Date().toISOString(),
       };
 
