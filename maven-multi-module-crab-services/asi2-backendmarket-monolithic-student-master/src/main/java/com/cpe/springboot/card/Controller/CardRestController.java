@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.cpe.springboot.dto.AsyncResponseDTO;
 import com.cpe.springboot.dto.CardDTO;
 import com.cpe.springboot.dto.requests.CardGeneratorTransactionDTO;
 import com.cpe.springboot.dto.requests.GenerateCardDTO;
@@ -70,7 +69,7 @@ public class CardRestController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/card/generate")
-	public AsyncResponseDTO generateCard(@RequestBody CardGeneratorTransactionDTO cardGeneratorTransactionDTO) {
+	public HttpStatus generateCard(@RequestBody CardGeneratorTransactionDTO cardGeneratorTransactionDTO) {
 		return cardModelService.generateCard(cardGeneratorTransactionDTO);
 	}
 }

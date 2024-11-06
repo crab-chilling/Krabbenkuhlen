@@ -1,6 +1,6 @@
 package com.cpe.springboot.dto.queues;
 
-public class CreatedCardDTO {
+public class CreatedCardDTO extends GenericMQDTO{
 
     public Integer userId;
 

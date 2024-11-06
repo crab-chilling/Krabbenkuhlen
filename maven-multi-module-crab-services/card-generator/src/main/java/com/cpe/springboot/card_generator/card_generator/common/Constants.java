@@ -8,7 +8,7 @@ public class Constants {
 
     public static final String ENDPOINT_ASYNC_WORKER_DESCRIPTION = "/prompt";
 
-    public static final String URL_PROPERTIES_SERVICE = "http://localhost:8080";
+    public static final String URL_PROPERTIES_SERVICE = "http://localhost:8085";
 
     public static final String ENDPOINT_PROPERTIES = "/properties";
 

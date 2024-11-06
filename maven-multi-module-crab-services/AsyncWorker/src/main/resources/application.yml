@@ -1,11 +1,18 @@
 spring:
   application:
     name: AsyncWorker
+  activemq:
+    broker-url: "tcp://localhost:61616"
+    user: admin
+    password: admin
+    packages:
+      trust-all: true
+    non-blocking-redelivery: true
 
 server:
   port: 8081
 
 api:
   url:
-    neural: "http://localhost:8080/prompt/req"
+    neural: "http://localhost:8080/fake/prompt/req"
     ollama: "http://localhost:11434/api/generate"

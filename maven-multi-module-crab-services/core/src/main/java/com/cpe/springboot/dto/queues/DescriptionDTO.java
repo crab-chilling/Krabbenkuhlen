@@ -1,7 +1,10 @@
 package com.cpe.springboot.dto.queues;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class DescriptionDTO extends GenericMQDTO {
 
+    @JsonProperty("description")
     private String description;
 
     public DescriptionDTO(Integer transactionId, String description) {
