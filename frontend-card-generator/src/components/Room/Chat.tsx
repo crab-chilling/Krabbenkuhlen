@@ -21,57 +21,7 @@ import {
 import { Message } from "../../types/chat";
 import { User } from "../../types/user";
 import { fetchAllUsers } from "../../api/user";
-
-const initialMessages: { [key: number]: Message[] } = {
-  1: [
-    {
-      id: 1,
-      senderId: 1,
-      receiverId: 2,
-      writtenAt: new Date(),
-      text: "Hello Alice!",
-    },
-    {
-      id: 2,
-      senderId: 2,
-      receiverId: 1,
-      writtenAt: new Date(),
-      text: "How are you?",
-    },
-  ],
-  2: [
-    {
-      id: 3,
-      senderId: 2,
-      receiverId: 1,
-      writtenAt: new Date(),
-      text: "Hi Bob!",
-    },
-    {
-      id: 4,
-      senderId: 1,
-      receiverId: 2,
-      writtenAt: new Date(),
-      text: "Are you free to talk?",
-    },
-  ],
-  3: [
-    {
-      id: 5,
-      senderId: 3,
-      receiverId: 1,
-      writtenAt: new Date(),
-      text: "Hey Charlie!",
-    },
-    {
-      id: 6,
-      senderId: 1,
-      receiverId: 3,
-      writtenAt: new Date(),
-      text: "Let's catch up!",
-    },
-  ],
-};
+import { io, Socket } from "socket.io-client";
 
 const Chat: React.FC = () => {
   const userId = useSelector(selectUserId);
@@ -86,35 +36,45 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const connection = useRef<Socket | null>(null);
+
+  // Fonction pour récupérer les utilisateurs
   const fetchUsers = async () => {
     try {
-      const users = await fetchAllUsers();
+      const users: Array<User> = await fetchAllUsers();
       setUsers(users);
     } catch (error) {
       console.error(error);
     }
   };
 
+  // Fonction pour envoyer un message via WebSocket
+  const sendSocketMessage = (message: Message) => {
+    if (connection.current) {
+      connection.current.emit("send-message", message);
+    }
+  };
+
+  // Gérer la sélection d'un utilisateur
   const handleUserSelect = (event: SelectChangeEvent<number>) => {
-    // TODO: call the API: getHistory()
+    setNewMessage("");
     const id = event.target.value as number;
     const user = users.find((u) => u.id === id);
     setSelectedUser(user || null);
-    const messages =
-      user && initialMessages[user.id] ? initialMessages[user.id] : [];
+    const messages: Array<Message> = []; // TODO: call the API: getHistory()
     setChatHistory(messages);
   };
 
+  // Envoyer un message
   const handleSendMessage = () => {
-    // TODO: call the API: sendMessage()
-    if (newMessage.trim() && selectedUser) {
+    if (selectedUser) {
       const message: Message = {
-        id: Date.now(),
-        senderId: userId,
-        receiverId: selectedUser.id,
-        writtenAt: new Date(),
-        text: newMessage,
+        from: userId,
+        to: selectedUser.id,
+        message: newMessage,
+        sentAt: new Date(),
       };
+      sendSocketMessage(message);
       setChatHistory((prev) => [...prev, message]);
       setNewMessage("");
       inputRef.current?.focus();
@@ -129,11 +89,54 @@ const Chat: React.FC = () => {
   };
 
   useEffect(() => {
-    if (users.length === 0) fetchUsers();
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatHistory, users]);
+    const fetchData = async () => {
+      await fetchUsers();
+
+      connection.current = io("http://localhost:3000", {
+        query: { userId: userId },
+      });
+
+      connection.current.on("connect", () => {
+        console.log("Socket.IO connection established");
+      });
+
+      connection.current.on(
+        "connected-users",
+        (connectedUsers: Array<string>) => {
+          console.log("Connected users: ", connectedUsers);
+
+          const updatedUsers = users.map((user) => {
+            if (connectedUsers.includes(user.id.toString())) {
+              return { ...user, isConnected: true };
+            }
+            return { ...user, isConnected: false };
+          });
+
+          setUsers(updatedUsers);
+        },
+      );
+
+      connection.current.on("receive-message", (message: Message) => {
+        console.log("Received message: ", message);
+        if (selectedUser?.id === message.from) {
+          setChatHistory((prev) => [...prev, message]);
+        }
+      });
+
+      connection.current.on("disconnect", () => {
+        console.log("Socket.IO connection closed");
+      });
+    };
+
+    fetchData();
+
+    return () => {
+      // Déconnecter la WebSocket lors du démontage du composant
+      if (connection.current) {
+        connection.current.disconnect();
+      }
+    };
+  }, []); // Le useEffect se déclenche uniquement si `users` ou `userId` changent
 
   return (
     <Box
@@ -161,15 +164,30 @@ const Chat: React.FC = () => {
       <FormControl fullWidth variant="outlined" sx={{ marginBottom: 2 }}>
         <InputLabel>Choose someone to chat with</InputLabel>
         <Select
-          value={selectedUser?.id || ""}
+          value={selectedUser ? selectedUser.id : ""}
           onChange={handleUserSelect}
           label="Select User"
         >
-          {users.map((user) => (
-            <MenuItem key={user.id} value={user.id}>
-              {user.lastName} {user.surName}
-            </MenuItem>
-          ))}
+          {users
+            .filter((u) => u.id !== userId)
+            .map((user) => (
+              <MenuItem key={user.id} value={user.id}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  {user.isConnected && (
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: "green",
+                        marginRight: 1,
+                      }}
+                    />
+                  )}
+                  {user.lastName} {user.surName}
+                </Box>
+              </MenuItem>
+            ))}
         </Select>
       </FormControl>
       {selectedUser && (
@@ -188,11 +206,11 @@ const Chat: React.FC = () => {
             {chatHistory.length > 0 &&
               chatHistory.map((msg) => (
                 <Box
-                  key={msg.id}
+                  key={String(msg.sentAt)}
                   sx={{
                     display: "flex",
                     justifyContent:
-                      msg.senderId === userId ? "flex-end" : "flex-start",
+                      msg.from === userId ? "flex-end" : "flex-start",
                     marginY: 1,
                   }}
                 >
@@ -200,15 +218,15 @@ const Chat: React.FC = () => {
                     sx={{
                       padding: 1,
                       borderRadius: 2,
-                      bgcolor: msg.senderId === userId ? "#e1f5fe" : "#ffe0b2",
+                      bgcolor: msg.from === userId ? "#e1f5fe" : "#ffe0b2",
                       maxWidth: "70%",
                       wordWrap: "break-word",
                     }}
                   >
                     <Typography variant="caption" sx={{ fontWeight: "bold" }}>
-                      {msg.senderId}
+                      {msg.from}
                     </Typography>
-                    <Typography variant="body1">{msg.text}</Typography>
+                    <Typography variant="body1">{msg.message}</Typography>
                   </Box>
                 </Box>
               ))}
