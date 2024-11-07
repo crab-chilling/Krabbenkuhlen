@@ -6,7 +6,8 @@ export default function (io) {
 
     const userId = socket.handshake.query.userId;
     ChatService.addUser(userId, socket.id);
-    socket.emit("connected-users", ChatService.getConnectedUsers());
+
+    io.emit("connected-users", ChatService.getConnectedUsers());
 
     socket.on("send-message", (message) => {
       console.log("Message:", message);
