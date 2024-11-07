@@ -30,7 +30,7 @@ const Chat: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [haveUsersBeenLoaded, setHaveUsersBeenLoaded] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -39,29 +39,40 @@ const Chat: React.FC = () => {
   const connection = useRef<Socket | null>(null);
 
   const fetchUsers = async () => {
+    setHaveUsersBeenLoaded(false);
     try {
-      setIsLoaded(false);
       const response: Array<User> = await fetchAllUsers();
       const filteredUsers = response.filter((u) => u.id !== userId);
       setUsers(filteredUsers);
-      if (filteredUsers.length > 0) {
-        setSelectedUser(filteredUsers[0]);
-      }
+      if (filteredUsers.length > 0) setSelectedUser(filteredUsers[0]);
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoaded(true);
+      setHaveUsersBeenLoaded(true);
     }
   };
 
+  const getUsernameById = (id: number) => {
+    if (id === userId) {
+      return `${userSurname} ${userLastName}`;
+    }
+
+    const user = users.find((u) => u.id === id);
+    if (user) {
+      return `${user.surName} ${user.lastName}`;
+    }
+
+    return `User${id}`;
+  };
+
   const fetchChatHistory = async (from: number, to: number) => {
+    setIsLoadingMessages(true);
     try {
-      setIsLoadingMessages(true);
       setChatHistory(await getHistory(from, to));
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoadingMessages(true);
+      setIsLoadingMessages(false);
     }
   };
 
@@ -125,7 +136,7 @@ const Chat: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!haveUsersBeenLoaded) return;
 
     connection.current = io("http://localhost:3000", {
       query: { userId: userId },
@@ -152,7 +163,7 @@ const Chat: React.FC = () => {
         connection.current.disconnect();
       }
     };
-  }, [isLoaded]);
+  }, [haveUsersBeenLoaded]);
 
   return (
     <Box
@@ -173,17 +184,17 @@ const Chat: React.FC = () => {
       >
         <Typography variant="h5">Chat</Typography>
         <Typography variant="subtitle1">
-          {userLastName} {userSurname} (id: {userId})
+          As: {userLastName} {userSurname} (id: {userId})
         </Typography>
       </Box>
       <Divider sx={{ marginBottom: 2 }} />
-      {!isLoaded ? (
+      {!haveUsersBeenLoaded ? (
         <Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
           <CircularProgress />
         </Box>
       ) : (
         <FormControl fullWidth variant="outlined" sx={{ marginBottom: 2 }}>
-          <InputLabel>Choose someone to chat with</InputLabel>
+          <InputLabel>Chat with</InputLabel>
           <Select
             value={
               selectedUser && users.some((user) => user.id === selectedUser.id)
@@ -253,7 +264,7 @@ const Chat: React.FC = () => {
                     }}
                   >
                     <Typography variant="caption" sx={{ fontWeight: "bold" }}>
-                      {msg.from}
+                      {getUsernameById(msg.from)}
                     </Typography>
                     <Typography variant="body1">{msg.message}</Typography>
                   </Box>
