@@ -6,22 +6,20 @@ import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 import SendIcon from "@mui/icons-material/Send";
 import { useSelector } from "react-redux";
-import {
-  selectUserId,
-  selectUserLastName,
-  selectUserSurname,
-} from "../../store/selectors/user.selectors";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-} from "@mui/material";
+import { selectUserId } from "../../store/selectors/user.selectors";
+import { selectUserLastName } from "../../store/selectors/user.selectors";
+import { selectUserSurname } from "../../store/selectors/user.selectors";
+import { FormControl } from "@mui/material";
+import { InputLabel } from "@mui/material";
+import { Select } from "@mui/material";
+import { MenuItem } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material";
 import { Message } from "../../types/chat";
 import { User } from "../../types/user";
 import { fetchAllUsers } from "../../api/user";
 import { io, Socket } from "socket.io-client";
+import CircularProgress from "@mui/material/CircularProgress";
+import { getHistory } from "../../api/chat";
 
 const Chat: React.FC = () => {
   const userId = useSelector(selectUserId);
@@ -32,40 +30,55 @@ const Chat: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const connection = useRef<Socket | null>(null);
 
-  // Fonction pour récupérer les utilisateurs
   const fetchUsers = async () => {
     try {
-      const users: Array<User> = await fetchAllUsers();
-      setUsers(users);
+      setIsLoaded(false);
+      const response: Array<User> = await fetchAllUsers();
+      const filteredUsers = response.filter((u) => u.id !== userId);
+      setUsers(filteredUsers);
+      if (filteredUsers.length > 0) {
+        setSelectedUser(filteredUsers[0]);
+      }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoaded(true);
     }
   };
 
-  // Fonction pour envoyer un message via WebSocket
+  const fetchChatHistory = async (from: number, to: number) => {
+    try {
+      setIsLoadingMessages(true);
+      setChatHistory(await getHistory(from, to));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoadingMessages(true);
+    }
+  };
+
   const sendSocketMessage = (message: Message) => {
     if (connection.current) {
       connection.current.emit("send-message", message);
     }
   };
 
-  // Gérer la sélection d'un utilisateur
-  const handleUserSelect = (event: SelectChangeEvent<number>) => {
+  const handleUserSelect = async (event: SelectChangeEvent<number>) => {
     setNewMessage("");
     const id = event.target.value as number;
     const user = users.find((u) => u.id === id);
     setSelectedUser(user || null);
-    const messages: Array<Message> = []; // TODO: call the API: getHistory()
-    setChatHistory(messages);
+    if (user) fetchChatHistory(user.id, userId);
   };
 
-  // Envoyer un message
   const handleSendMessage = () => {
     if (selectedUser) {
       const message: Message = {
@@ -88,55 +101,58 @@ const Chat: React.FC = () => {
     }
   };
 
+  const onConnectedUsersUpdate = (users: Array<string>) => {
+    console.log("Connected users: ", users);
+    setUsers((prevUsers) => {
+      return prevUsers.map((user) => {
+        return {
+          ...user,
+          isConnected: users.includes(user.id.toString()) ? true : false,
+        };
+      });
+    });
+  };
+
+  const onMessageReceive = (message: Message) => {
+    console.log("Received message: ", message);
+    if (selectedUser?.id === message.from) {
+      setChatHistory((prev) => [...prev, message]);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      await fetchUsers();
+    fetchUsers();
+  }, []);
 
-      connection.current = io("http://localhost:3000", {
-        query: { userId: userId },
-      });
+  useEffect(() => {
+    if (!isLoaded) return;
 
-      connection.current.on("connect", () => {
-        console.log("Socket.IO connection established");
-      });
+    connection.current = io("http://localhost:3000", {
+      query: { userId: userId },
+    });
 
-      connection.current.on(
-        "connected-users",
-        (connectedUsers: Array<string>) => {
-          console.log("Connected users: ", connectedUsers);
+    connection.current.on("connect", () => {
+      console.log("Socket.IO connection established");
+    });
 
-          const updatedUsers = users.map((user) => {
-            if (connectedUsers.includes(user.id.toString())) {
-              return { ...user, isConnected: true };
-            }
-            return { ...user, isConnected: false };
-          });
+    connection.current.on("connected-users", (users: Array<string>) => {
+      onConnectedUsersUpdate(users);
+    });
 
-          setUsers(updatedUsers);
-        },
-      );
+    connection.current.on("receive-message", (message: Message) => {
+      onMessageReceive(message);
+    });
 
-      connection.current.on("receive-message", (message: Message) => {
-        console.log("Received message: ", message);
-        if (selectedUser?.id === message.from) {
-          setChatHistory((prev) => [...prev, message]);
-        }
-      });
-
-      connection.current.on("disconnect", () => {
-        console.log("Socket.IO connection closed");
-      });
-    };
-
-    fetchData();
+    connection.current.on("disconnect", () => {
+      console.log("Socket.IO connection closed");
+    });
 
     return () => {
-      // Déconnecter la WebSocket lors du démontage du composant
       if (connection.current) {
         connection.current.disconnect();
       }
     };
-  }, []); // Le useEffect se déclenche uniquement si `users` ou `userId` changent
+  }, [isLoaded]);
 
   return (
     <Box
@@ -157,39 +173,46 @@ const Chat: React.FC = () => {
       >
         <Typography variant="h5">Chat</Typography>
         <Typography variant="subtitle1">
-          {userLastName} {userSurname}
+          {userLastName} {userSurname} (id: {userId})
         </Typography>
       </Box>
       <Divider sx={{ marginBottom: 2 }} />
-      <FormControl fullWidth variant="outlined" sx={{ marginBottom: 2 }}>
-        <InputLabel>Choose someone to chat with</InputLabel>
-        <Select
-          value={selectedUser ? selectedUser.id : ""}
-          onChange={handleUserSelect}
-          label="Select User"
-        >
-          {users
-            .filter((u) => u.id !== userId)
-            .map((user) => (
+      {!isLoaded ? (
+        <Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <FormControl fullWidth variant="outlined" sx={{ marginBottom: 2 }}>
+          <InputLabel>Choose someone to chat with</InputLabel>
+          <Select
+            value={
+              selectedUser && users.some((user) => user.id === selectedUser.id)
+                ? selectedUser.id
+                : ""
+            }
+            onChange={handleUserSelect}
+            label="Select User"
+          >
+            {users.map((user) => (
               <MenuItem key={user.id} value={user.id}>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  {user.isConnected && (
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        bgcolor: "green",
-                        marginRight: 1,
-                      }}
-                    />
-                  )}
-                  {user.lastName} {user.surName}
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      bgcolor: user.isConnected ? "green" : "red",
+                      marginRight: 1,
+                    }}
+                  />
+                  {user.lastName} {user.surName} (id: {user.id})
                 </Box>
               </MenuItem>
             ))}
-        </Select>
-      </FormControl>
+          </Select>
+        </FormControl>
+      )}
+
       {selectedUser && (
         <>
           <Divider sx={{ marginY: 2 }} />
@@ -203,7 +226,13 @@ const Chat: React.FC = () => {
               borderRadius: 1,
             }}
           >
-            {chatHistory.length > 0 &&
+            {isLoadingMessages ? (
+              <Box
+                sx={{ display: "flex", justifyContent: "center", padding: 2 }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : (
               chatHistory.map((msg) => (
                 <Box
                   key={String(msg.sentAt)}
@@ -229,7 +258,8 @@ const Chat: React.FC = () => {
                     <Typography variant="body1">{msg.message}</Typography>
                   </Box>
                 </Box>
-              ))}
+              ))
+            )}
             <div ref={messagesEndRef} />
           </Box>
           <Box sx={{ display: "flex", marginTop: 2 }}>
