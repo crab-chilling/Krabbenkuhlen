@@ -1,6 +1,6 @@
 export interface Message {
   from: number;
-  to: number | null;
+  to: number;
   message: string;
   sentAt: Date;
 }

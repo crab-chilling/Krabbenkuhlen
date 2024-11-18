@@ -22,11 +22,13 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { getHistory } from "../../api/chat";
 
 const Chat: React.FC = () => {
+  const ALL_USERS_ID: number = 999;
+
   const userId = useSelector(selectUserId);
   const userLastName = useSelector(selectUserLastName);
   const userSurname = useSelector(selectUserSurname);
 
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<Array<User>>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -42,9 +44,19 @@ const Chat: React.FC = () => {
     setHaveUsersBeenLoaded(false);
     try {
       const response: Array<User> = await fetchAllUsers();
-      const filteredUsers = response.filter((u) => u.id !== userId);
-      setUsers(filteredUsers);
-      if (filteredUsers.length > 0) setSelectedUser(filteredUsers[0]);
+      const filteredUsers = response.filter((user) => user.id !== userId);
+
+      const allUsersOption: User = {
+        id: ALL_USERS_ID,
+        login: "",
+        lastName: "All users",
+        surName: "",
+        email: "",
+        account: 0,
+        cardList: [],
+      };
+
+      setUsers([{ ...allUsersOption }, ...filteredUsers]);
     } catch (error) {
       console.error(error);
     } finally {
@@ -82,11 +94,12 @@ const Chat: React.FC = () => {
     }
   };
 
-  const handleUserSelect = async (event: SelectChangeEvent<number>) => {
-    setNewMessage("");
+  const handleUserSelect = (event: SelectChangeEvent<number>) => {
     const id = event.target.value as number;
     const user = users.find((u) => u.id === id);
+    setNewMessage("");
     setSelectedUser(user || null);
+    setChatHistory([]);
     if (user) fetchChatHistory(user.id, userId);
   };
 
@@ -126,7 +139,10 @@ const Chat: React.FC = () => {
 
   const onMessageReceive = (message: Message) => {
     console.log("Received message: ", message);
-    if (selectedUser?.id === message.from) {
+    if (
+      selectedUser?.id === message.from ||
+      (message.to === ALL_USERS_ID && selectedUser?.id === ALL_USERS_ID)
+    ) {
       setChatHistory((prev) => [...prev, message]);
     }
   };
@@ -207,15 +223,17 @@ const Chat: React.FC = () => {
             {users.map((user) => (
               <MenuItem key={user.id} value={user.id}>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      bgcolor: user.isConnected ? "green" : "red",
-                      marginRight: 1,
-                    }}
-                  />
+                  {user.id !== ALL_USERS_ID && (
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: user.isConnected ? "green" : "red",
+                        marginRight: 1,
+                      }}
+                    />
+                  )}
                   {user.lastName} {user.surName} (id: {user.id})
                 </Box>
               </MenuItem>
