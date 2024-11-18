@@ -7,4 +7,5 @@ export interface User {
   account: number;
   cardList: Array<number>;
   isConnected?: boolean;
+  actionPoints: number;
 }

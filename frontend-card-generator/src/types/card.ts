@@ -8,7 +8,7 @@ export interface Card {
   id: number;
   energy: number;
   hp: number;
-  defence: number;
+  defense: number;
   attack: number;
   price: number;
   userId: number | null;

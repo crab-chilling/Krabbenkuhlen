@@ -1,4 +1,4 @@
-class Player {
+export default class Player {
     constructor(id, health, cards){
         this.id = id;
         this.health = health;
@@ -18,4 +18,3 @@ class Player {
         return this.cards.every(card => card.hp <= 0);
     }
 }
-module.exports.Player;

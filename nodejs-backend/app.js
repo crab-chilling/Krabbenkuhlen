@@ -32,6 +32,9 @@ app.get("/health-check", (req, res) => {
 
 // Websocket
 chatSocket(io);
+gameSocket(io);
+
+// Consumers
 
 const PORT = 3000;
 server.listen(PORT, () => {
