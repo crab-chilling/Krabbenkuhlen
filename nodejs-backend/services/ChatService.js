@@ -1,5 +1,7 @@
 import axios from "axios";
 
+const ALL_USERS_ID = 999;
+
 class ChatService {
   constructor() {
     this.activeSockets = {};
@@ -18,11 +20,11 @@ class ChatService {
     return Object.keys(this.activeSockets);
   }
 
-  handleSendMessage(io, message) {
+  handleSendMessage(io, socket, message) {
     if (!message.to) return;
 
-    if (message.to === "*") {
-      io.emit("receive-message", message);
+    if (message.to === ALL_USERS_ID) {
+      socket.broadcast.emit("receive-message", message);
     } else {
       const targetSocketId = this.activeSockets[message.to]?.socketId;
       if (targetSocketId) {
