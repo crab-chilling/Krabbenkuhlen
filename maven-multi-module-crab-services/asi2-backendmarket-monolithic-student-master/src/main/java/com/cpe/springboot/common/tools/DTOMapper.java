@@ -1,8 +1,11 @@
 package com.cpe.springboot.common.tools;
 import com.cpe.springboot.card.model.CardModel;
 import com.cpe.springboot.dto.CardDTO;
+import com.cpe.springboot.message.model.MessageDto;
+import com.cpe.springboot.message.model.MessageModel;
 import com.cpe.springboot.user.model.UserDTO;
 import com.cpe.springboot.user.model.UserModel;
+import org.apache.catalina.User;
 
 public class DTOMapper {
 	
@@ -28,6 +31,24 @@ public class DTOMapper {
 	public static UserDTO fromUserModelToUserDTO(UserModel uM) {
 		UserDTO uDto =new UserDTO(uM);
 		return uDto;
+	}
+
+	public static MessageDto fromMessageModel(MessageModel messageModel) {
+		return MessageDto.builder()
+				.date(messageModel.getDate())
+				.from(messageModel.getFrom().getId())
+				.to(messageModel.getTo().getId())
+				.message(messageModel.getMessage())
+				.build();
+	}
+
+	public static MessageModel fromMessageDto(MessageDto messageDto) {
+		return MessageModel.builder()
+				.date(messageDto.getDate())
+				.from(new UserModel(messageDto.getFrom()))
+				.to(new UserModel(messageDto.getTo()))
+				.message(messageDto.getMessage())
+				.build();
 	}
 	
 }

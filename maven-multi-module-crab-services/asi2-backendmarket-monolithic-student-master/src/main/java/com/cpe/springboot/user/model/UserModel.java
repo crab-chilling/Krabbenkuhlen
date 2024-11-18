@@ -10,9 +10,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
 @JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserModel implements Serializable {
 
 	private static final long serialVersionUID = 2733795832476568049L;
@@ -32,7 +37,8 @@ public class UserModel implements Serializable {
 	//@OneToMany(mappedBy = "user")
 	private Set<CardModel> cardList = new HashSet<>();
 
-	public UserModel() {
+	public UserModel(int id) {
+		this.id = id;
 		this.login = "";
 		this.pwd = "";
 		this.lastName="lastname_default";
