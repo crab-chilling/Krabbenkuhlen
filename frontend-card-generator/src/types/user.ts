@@ -6,4 +6,5 @@ export interface User {
   email: string;
   account: number;
   cardList: Array<number>;
+  isConnected?: boolean;
 }

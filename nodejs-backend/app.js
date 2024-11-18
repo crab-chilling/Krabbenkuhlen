@@ -1,29 +1,39 @@
-import express from 'express';
-import http from 'http';
-import { Server } from 'socket.io';
-import socketHandler from './sockets/socket.js';
-import messageRoutes from './routes/messageRoutes.js';
-import MessageConsumer from './consumers/MessageConsumer.js';
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import chatSocket from "./sockets/chatSocket.js";
+import cors from "cors";
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  }),
+);
 
 // Middlewares
-app.use(express.json());
-app.use(express.static('www'))
+// app.use(express.json());
+app.use(express.static("www"));
 
 // Routes
-app.use('/api', messageRoutes);
+app.get("/health-check", (req, res) => {
+  res.send("UP");
+});
 
 // Websocket
-socketHandler(io);
-
-// Consumers
-const messageConsumer = new MessageConsumer(io);
-messageConsumer.start();
+chatSocket(io);
 
 const PORT = 3000;
 server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

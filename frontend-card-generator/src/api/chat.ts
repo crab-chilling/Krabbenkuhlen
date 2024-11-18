@@ -1,9 +1,9 @@
 import { Message } from "../types/chat";
 
-export const getHistory = async (senderId: number, receiverId: number) => {
+export const getHistory = async (from: number, to: number) => {
   const url = new URL(import.meta.env.VITE_APP_API_URL + "/chat/history");
-  url.searchParams.append("senderId", senderId.toString());
-  url.searchParams.append("receiverId", receiverId.toString());
+  url.searchParams.append("from", from.toString());
+  url.searchParams.append("to", to.toString());
 
   const response = await fetch(url.toString(), {
     method: "GET",
