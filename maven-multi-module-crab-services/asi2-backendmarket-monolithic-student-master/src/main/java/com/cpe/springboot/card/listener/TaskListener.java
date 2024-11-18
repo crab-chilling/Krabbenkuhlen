@@ -9,42 +9,46 @@ import com.cpe.springboot.dto.queues.GenericMQDTO;
 import com.cpe.springboot.dto.requests.EmailTransactionDTO;
 import com.cpe.springboot.user.controller.UserRepository;
 import com.cpe.springboot.user.model.UserModel;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Optional;
 
+import static com.cpe.springboot.common.Constants.ENDPOINT_SEND_EMAIL;
+
 @Slf4j
 @Component
 public class TaskListener extends AbstractJmsListener {
 
-    private final static String URL_NOTIFICATION_SERVICE = "http://localhost:8091";
-    private final static String ENDPOINT_SEND_EMAIL = "/send/mail";
+    private final UserRepository userRepository;
+    private final WebClient.Builder webClientBuilder;
+    private final CardModelRepository cardRepository;
 
-    private UserRepository userRepository;
-    private WebClient.Builder webClientBuilder;
-    private CardModelRepository cardRepository;
-
-    public TaskListener(ObjectMapper objectMapper, JmsTemplate jmsTemplate, ActiveMQ activeMQ,
+    public TaskListener(ObjectMapper objectMapper, ActiveMQ activeMQ,
                         UserRepository userRepository, WebClient.Builder webClientBuilder, CardModelRepository cardRepository) {
-        super(objectMapper, jmsTemplate, activeMQ);
+        super(objectMapper, activeMQ);
         this.userRepository = userRepository;
         this.webClientBuilder = webClientBuilder;
         this.cardRepository = cardRepository;
     }
 
     @Override
-    public GenericMQDTO traitementService(Object object) {
+    @JmsListener(destination = "createdcard", containerFactory = "queueConnectionFactory")
+    public void traitementService(TextMessage textMessage) throws JsonProcessingException, JMSException {
 
-        if(object instanceof CreatedCardDTO) {
-            CreatedCardDTO createdCardDTO = (CreatedCardDTO) object;
+        Object object = this.messageToObject(textMessage);
+
+        if(object instanceof CreatedCardDTO createdCardDTO) {
 
             Optional<UserModel> o_userModel = userRepository.findById(createdCardDTO.userId);
             if (o_userModel.isEmpty()) {
-                return null;
+                return;
             }
 
             UserModel user = o_userModel.get();
@@ -59,13 +63,11 @@ public class TaskListener extends AbstractJmsListener {
 
             webClientBuilder.build()
                     .post()
-                    .uri(URL_NOTIFICATION_SERVICE + ENDPOINT_SEND_EMAIL)
+                    .uri(ENDPOINT_SEND_EMAIL)
                     .bodyValue(new EmailTransactionDTO(user.getEmail(), "Your card has been generated", "Hello,\nYour card has been generated !"))
                     .retrieve()
                     .toBodilessEntity()
                     .block();
         }
-
-        return null;
     }
 }

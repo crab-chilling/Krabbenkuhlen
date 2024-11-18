@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
-public class PromptDto implements Serializable {
+public class PromptDTO implements Serializable {
     @JsonProperty("response")
     private String prompt;
     private int transactionId;

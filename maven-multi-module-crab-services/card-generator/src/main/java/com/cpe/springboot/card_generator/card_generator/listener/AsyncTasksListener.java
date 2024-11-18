@@ -2,62 +2,63 @@ package com.cpe.springboot.card_generator.card_generator.listener;
 
 import com.cpe.springboot.activemq.AbstractJmsListener;
 import com.cpe.springboot.activemq.ActiveMQ;
-import com.cpe.springboot.activemq.ActiveMQListener;
 import com.cpe.springboot.card_generator.card_generator.model.Transaction;
 import com.cpe.springboot.card_generator.card_generator.service.CardGeneratorService;
-import com.cpe.springboot.card_generator.card_generator.service.InternalCardService;
-import com.cpe.springboot.dto.CardDTO;
 import com.cpe.springboot.dto.queues.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.JMSException;
-import lombok.AllArgsConstructor;
+import jakarta.jms.TextMessage;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.query.criteria.JpaRoot;
-import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-import static com.cpe.springboot.card_generator.card_generator.common.Constants.ACTIVEMQ_QUEUE_CREATED_CARD;
-import static com.cpe.springboot.card_generator.card_generator.common.Constants.CARD_DEFAULT_PRICE;
+import static com.cpe.springboot.common.Constants.ACTIVEMQ_QUEUE_CREATED_CARD;
+import static com.cpe.springboot.common.Constants.CARD_DEFAULT_PRICE;
 
 @Slf4j
 @Component
 public class AsyncTasksListener extends AbstractJmsListener {
 
-    private InternalCardService internalCardService;
+    private final CardGeneratorService cardGeneratorService;
 
-    public AsyncTasksListener(ObjectMapper objectMapper, JmsTemplate jmsTemplate, InternalCardService internalCardService, ActiveMQ activeMQ) {
-        super(objectMapper, jmsTemplate, activeMQ);
-        this.internalCardService = internalCardService;
+    public AsyncTasksListener(ObjectMapper objectMapper, CardGeneratorService cardGeneratorService, ActiveMQ activeMQ) {
+        super(objectMapper, activeMQ);
+        this.cardGeneratorService = cardGeneratorService;
     }
 
     @Override
-    public GenericMQDTO traitementService(Object object) {
+    @Transactional
+    @JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
+    public void traitementService(TextMessage textMessage) throws JMSException, JsonProcessingException {
+
+        Object object = messageToObject(textMessage);
+
         log.info("[AsyncTasksListener] Asynchronous tasks listener starting.");
         Transaction transaction = null;
 
-        if (object instanceof ImageDTO) {
+        if (object instanceof ImageDTO imageDTO) {
 
-            transaction = internalCardService.proceedImageMessage((ImageDTO) object);
+            transaction = cardGeneratorService.proceedImageMessage(imageDTO);
 
-        } else if (object instanceof DescriptionDTO) {
+        } else if (object instanceof DescriptionDTO descriptionDTO) {
 
-            transaction = internalCardService.proceedDescriptionMessage((DescriptionDTO) object);
+            transaction = cardGeneratorService.proceedDescriptionMessage(descriptionDTO);
 
-        } else if (object instanceof PropertiesDTO) {
+        } else if (object instanceof PropertiesDTO propertiesDTO) {
 
-            transaction = internalCardService.proceedPropertiesMessage((PropertiesDTO) object);
+            transaction = cardGeneratorService.proceedPropertiesMessage(propertiesDTO);
 
         }
 
         log.info("[AsyncTasksListener] IsCardComplete {}", transaction);
-        if (transaction != null && internalCardService.isCardComplete(transaction)) {
+        if (transaction != null && cardGeneratorService.isCardComplete(transaction)) {
             CreatedCardDTO c = new CreatedCardDTO(transaction.getUserId(), transaction.getImageUrl(), transaction.isBase64(),
                     transaction.getDescription(), transaction.getHp(), transaction.getEnergy(), transaction.getAttack(),
                     transaction.getDefense(), CARD_DEFAULT_PRICE);
             c.transactionId = transaction.getId();
             this.activeMQ.publish(c, ACTIVEMQ_QUEUE_CREATED_CARD);
         }
-        return null;
     }
 }

@@ -21,8 +21,8 @@ public class AsyncJobController {
     }
 
     @PostMapping("/image")
-    public HttpStatus generateImage(@RequestBody ImageTransactionDTO iamgeTransactionDTO) {
-        this.imageService.createImage(iamgeTransactionDTO);
+    public HttpStatus generateImage(@RequestBody ImageTransactionDTO imageTransactionDTO) {
+        this.imageService.createImage(imageTransactionDTO);
         return HttpStatus.OK;
     }
 
