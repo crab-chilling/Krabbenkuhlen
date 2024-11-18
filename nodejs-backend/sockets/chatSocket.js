@@ -11,8 +11,7 @@ export default function (io) {
 
     socket.on("send-message", (message) => {
       console.log("Message:", message);
-      if (message.to) ChatService.sendMessageToUser(io, message);
-      else ChatService.sendMessageToAll(io, message);
+      ChatService.handleSendMessage(io, message);
     });
 
     socket.on("disconnect", () => {

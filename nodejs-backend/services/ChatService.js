@@ -18,15 +18,16 @@ class ChatService {
     return Object.keys(this.activeSockets);
   }
 
-  sendMessageToAll(io, message) {
-    io.emit("receive-message", message);
-    this.saveMessage(message);
-  }
+  handleSendMessage(io, message) {
+    if (!message.to) return;
 
-  sendMessageToUser(io, message) {
-    const targetSocketId = this.activeSockets[message.to]?.socketId;
-    if (targetSocketId) {
-      io.to(targetSocketId).emit("receive-message", message);
+    if (message.to === "*") {
+      io.emit("receive-message", message);
+    } else {
+      const targetSocketId = this.activeSockets[message.to]?.socketId;
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("receive-message", message);
+      }
     }
 
     this.saveMessage(message);
