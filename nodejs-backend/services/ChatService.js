@@ -5,7 +5,7 @@ const ALL_USERS_ID = 999;
 class ChatService {
   constructor() {
     this.activeSockets = {};
-    this.messageHistoryApiUrl = "http://localhost:8082/api/chat";
+    this.messageHistoryApiUrl = "http://localhost:8083/message";
   }
 
   addUser(userId, socketId) {
@@ -36,14 +36,13 @@ class ChatService {
   }
 
   async saveMessage(message) {
-    return;
     // TODO: create the Spring API then adapt this call
     try {
       const payload = {
-        message,
-        fromUserId,
-        toUserId: toUserId || null,
-        timestamp: new Date().toISOString(),
+        message: message.message,
+        from: message.from,
+        to: message.to,
+        date: new Date().toISOString(),
       };
 
       const response = await axios.post(this.messageHistoryApiUrl, payload);
