@@ -11,8 +11,8 @@ import { generateCard } from "../api/card.ts";
 import { useSelector } from "react-redux";
 import { selectUserId } from "../store/selectors/user.selectors";
 
-
 export default function Generator() {
+  const userId = useSelector(selectUserId);
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState("");
   const [description, setDescription] = useState("");
@@ -34,12 +34,7 @@ export default function Generator() {
 
     try {
       const newCard = { image, description };
-      console.log("newCard: ", newCard); // TODO: call the new generation API
-
-      const userId = useSelector(selectUserId);
-
       await generateCard(userId, newCard.image, newCard.description);
-
       toast.success("The generation of your card has started.");
 
       setImage("");
