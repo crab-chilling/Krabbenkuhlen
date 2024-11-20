@@ -45,8 +45,9 @@ export default function Generator() {
       setImage("");
       setDescription("");
       setTermsAccepted(false);
-    } catch {
+    } catch (e) {
       toast.success("An error occured, try again later.");
+      console.log("Error: ", e)
     } finally {
       setLoading(false);
     }

@@ -1,8 +1,7 @@
 import { Message } from "../types/chat";
 
 export const getHistory = async (from: number, to: number) => {
-  return [];
-  const url = new URL(import.meta.env.VITE_APP_API_URL + "/chat/history");
+  const url = new URL(import.meta.env.VITE_APP_API_URL + "/message");
   url.searchParams.append("from", from.toString());
   url.searchParams.append("to", to.toString());
 
@@ -21,7 +20,7 @@ export const getHistory = async (from: number, to: number) => {
 
 export const sendMessage = async (message: Message) => {
   const response = await fetch(
-    import.meta.env.VITE_APP_API_URL + "/chat/send",
+    import.meta.env.VITE_APP_API_URL + "/message",
     {
       method: "POST",
       headers: {

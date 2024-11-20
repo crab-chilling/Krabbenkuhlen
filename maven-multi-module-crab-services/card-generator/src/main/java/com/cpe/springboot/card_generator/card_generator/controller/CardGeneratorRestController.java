@@ -17,7 +17,7 @@ public class CardGeneratorRestController {
         this.cardGeneratorService=cardGeneratorService;
     }
 
-    @RequestMapping(method= RequestMethod.POST, value="/generate")
+    @RequestMapping(method= RequestMethod.POST, value="/card/generate")
     public HttpStatus generateCard(@RequestBody CardGeneratorTransactionDTO cardGeneratorTransactionDTO)
     {
         return this.cardGeneratorService.generateCard(cardGeneratorTransactionDTO);

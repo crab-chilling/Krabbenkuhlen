@@ -20,7 +20,7 @@ public class MessageController {
     @GetMapping("/message")
     public List<MessageDto> getMessage(@RequestParam("from")int from, @RequestParam("to")int to){
 
-        return messageRepository.findMessageModelByFromIdAndToId(from, to)
+        return messageRepository.findMessageModelByFromIdAndToIdOrToIdAndFromId(from, to)
                 .stream()
                 .map(DTOMapper::fromMessageModel)
                 .collect(Collectors.toList());
