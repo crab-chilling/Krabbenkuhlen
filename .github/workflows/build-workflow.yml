@@ -29,11 +29,5 @@ jobs:
     #Build first project
     - name: Build Monolith micro service
       run: |
-        cd maven-multi-module-crab-services/asi2-backendmarket-monolithic-student-master
+        cd maven-multi-module-crab-services/
         mvn clean install
-
-    #Build second project
-    - name: Build Properties micro service
-      run: |
-        cd cardPropertiesService
-        mvn clean install -DskipTests
