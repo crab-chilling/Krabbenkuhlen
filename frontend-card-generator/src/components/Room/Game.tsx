@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import { User } from "../../types/user";
 import {io} from "socket.io-client";
 
 const socket = io('http://localhost:3000', {
@@ -8,12 +7,11 @@ const socket = io('http://localhost:3000', {
 });
 
 
-const Game: React.FC = () => {
+const Game: React.FC = (props) => {
+
     const [attackResult, setAttackResult] = useState(null); 
-    const [currentPlayer, setCurrentPlayer] = useState<User | null>(null);
-    const [opponent, setOpponent] = useState<User | null>(null);
-    const [isSearching, setIsSearching] = useState(false);
-    const [roomId, setRoomId] = useState(null);
+    const [currentPlayer, setCurrentPlayer] = useState(null);
+    const [opponent, setOpponent] = useState(null);
 
     useEffect(() => {
         socket.on('connect', () => {
@@ -22,12 +20,11 @@ const Game: React.FC = () => {
 
         socket.on('matchFound', (data) => {
             console.log("Match trouvé ", data)
-            setRoomId(data.roomId);
+            console.log(socket.id);
             const current = data.players.find(player => player === socket.id);
             const opponentPlayer = data.players.find(player => player !== socket.id);
             setCurrentPlayer(current);
             setOpponent(opponentPlayer);
-            setIsSearching(false);
         })
 
         socket.on('attackResult', (data) => {
@@ -36,9 +33,7 @@ const Game: React.FC = () => {
         })
 
         return() => {
-            socket.off('gameConnection')
-            socket.off('gameInfo');
-            socket.off('attackResult');
+            socket.disconnect();
         };
     }, []);
 
@@ -56,26 +51,12 @@ const Game: React.FC = () => {
 
     };
 
-    const findMatch = () => {
-        setIsSearching(true);
-        socket.emit('findMatch');
-    };
-
     return (
-        <div>
-            <h1>Tableau de Bord du Joueur</h1>
-            {!roomId ? (
-                <div>
-                    <button onClick={findMatch} disabled={isSearching}>
-                        {isSearching ? 'Recherche d\'une partie...' : 'Trouver une Partie'}
-                    </button>
-                </div>
-            ) : (
-                <div>
-                    <h2>Partie dans la salle : {roomId}</h2>
-                    <p>Adversaire : {opponent ? opponent : 'En attente...'}</p>
-                </div>
-            )}
+        <div>                
+            <div>
+                <h2>Partie dans la salle : {props.roomId}</h2>
+                <p>Adversaire : {opponent ? opponent : 'En attente...'}</p>
+            </div>
 
             {roomId && (
                 <div>

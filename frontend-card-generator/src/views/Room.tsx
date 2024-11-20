@@ -8,10 +8,9 @@ export default function Room() {
     <Grid container>
       <Grid item xs={3}>
         <Chat currentUser="Lilian Andres" />
-        <Game></Game>
       </Grid>
-      <Grid item xs={9}>
-        {/* Code goes here */}
+      <Grid item xs={6}>
+        <Game roomId={id}></Game>
       </Grid>
     </Grid>
   );

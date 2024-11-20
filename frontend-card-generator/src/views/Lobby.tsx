@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Button, Grid, Stack } from "@mui/material";
 import CardTable from "../components/Card/CardTable";
 import Loader from "../components/Loader";
@@ -6,6 +6,12 @@ import { useSelector } from "react-redux";
 import { selectInventoryCards } from "../store/selectors/inventory.selectors";
 import CheckIcon from "@mui/icons-material/Check";
 import { useNavigate } from "react-router-dom";
+import {io, Socket} from "socket.io-client";
+
+const socket = io('http://localhost:3000', {
+  transports: ['websocket'],
+  withCredentials: true
+});
 
 export default function Lobby() {
   const maxSelectionCards = 1;
@@ -20,8 +26,11 @@ export default function Lobby() {
 
   const handleJoinClick = () => {
     console.log("Joining the room...");
-    console.log("Room ID = 536");
-    navigate("/room/" + "536");
+    socket.emit('findMatch');
+    socket.on('joinRoom',(data) => {
+      console.log(data)
+      navigate("/room/" + data.roomId);
+    })
   };
 
   return (
