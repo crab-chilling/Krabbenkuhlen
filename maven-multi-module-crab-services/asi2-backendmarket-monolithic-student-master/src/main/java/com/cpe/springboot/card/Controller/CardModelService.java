@@ -1,60 +1,30 @@
 package com.cpe.springboot.card.Controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
-import com.cpe.springboot.activemq.ActiveMQ;
-import com.cpe.springboot.card.listener.TaskListener;
+import com.cpe.springboot.common.tools.DTOMapper;
 import com.cpe.springboot.dto.CardDTO;
-import com.cpe.springboot.dto.queues.CreatedCardDTO;
 import com.cpe.springboot.dto.requests.CardGeneratorTransactionDTO;
-import com.cpe.springboot.dto.requests.EmailTransactionDTO;
-import com.cpe.springboot.user.controller.UserRepository;
-import com.cpe.springboot.user.model.UserModel;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.jms.JMSException;
-import jakarta.jms.TextMessage;
 import org.springframework.http.HttpStatus;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import com.cpe.springboot.card.model.CardModel;
 import com.cpe.springboot.card.model.CardReference;
-import com.cpe.springboot.common.tools.DTOMapper;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import static com.cpe.springboot.common.Constants.ENDPOINT_GENERATE_CARD;
 
 @Service
 public class CardModelService {
 	private final CardModelRepository cardRepository;
-	private final UserRepository userRepository;
 	private final CardReferenceService cardRefService;
-	private final JmsTemplate jmsTemplate;
-	private Random rand;
-	private WebClient.Builder webClientBuilder;
-	private ObjectMapper objectMapper;
-	private ActiveMQ activeMQ;
-	private TaskListener taskListener;
+	private final Random rand;
 
-	private final static String URL_CARD_GENERATOR = "http://localhost:8082";
-	private final static String ENDPOINT_GENERATE_CARD = "/generate";
-	private final static String ACTIVEMQ_QUEUE_CREATED_CARD = "createdcard";
-	private final static String URL_NOTIFICATION_SERVICE = "http://localhost:8091";
-	private final static String ENDPOINT_SEND_EMAIL = "/send/mail";
-
-	public CardModelService(UserRepository userRepository, CardModelRepository cardRepository,
-							CardReferenceService cardRefService, JmsTemplate jmsTemplate, TaskListener taskListener) {
+	public CardModelService(CardModelRepository cardRepository,
+							CardReferenceService cardRefService) {
 		this.rand=new Random();
-		this.userRepository = userRepository;// Dependencies injection by constructor
 		this.cardRepository=cardRepository;
 		this.cardRefService=cardRefService;
-		this.jmsTemplate = jmsTemplate;
-		this.objectMapper = objectMapper;
-		this.activeMQ = activeMQ;
-		this.taskListener =  taskListener;
 	}
 	
 	public List<CardModel> getAllCardModel() {
@@ -107,19 +77,14 @@ public class CardModelService {
 	}
 
 	public HttpStatus generateCard(CardGeneratorTransactionDTO cardGeneratorTransactionDTO) {
-		return WebClient.builder().build()
-				.post()
-				.uri(URL_CARD_GENERATOR + ENDPOINT_GENERATE_CARD)
-				.bodyValue(cardGeneratorTransactionDTO)
-				.retrieve()
-				.toBodilessEntity()
-				.block()
+		return Objects.requireNonNull(WebClient.builder().build()
+                        .post()
+                        .uri(ENDPOINT_GENERATE_CARD)
+                        .bodyValue(cardGeneratorTransactionDTO)
+                        .retrieve()
+                        .toBodilessEntity()
+                        .block())
 				.getStatusCode().isError() ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK;
-	}
-
-	@JmsListener(destination = "createdcard", containerFactory = "queueConnectionFactory")
-	public void proceedGeneratedCardMessage(TextMessage message) throws JMSException, JsonProcessingException, ClassNotFoundException {
-		taskListener.doReceive(message, null);
 	}
 }
 

@@ -7,6 +7,8 @@ import com.cpe.springboot.dto.requests.PropertiesTransactionDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import static com.cpe.springboot.cardPropertiesService.common.Constants.ACTIVEMQ_QUEUE_PROPERTIES_WORKFLOW;
+
 @RestController
 @AllArgsConstructor
 public class PropertiesController {
@@ -15,6 +17,6 @@ public class PropertiesController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/properties")
     public void publishTransaction(@RequestBody PropertiesTransactionDTO transactionDTO){
-        activeMQ.publish(new ImageDTO(transactionDTO.getTransactionId(), transactionDTO.getImgUrl(), transactionDTO.isBase64()), "properties");
+        activeMQ.publish(new ImageDTO(transactionDTO.getTransactionId(), transactionDTO.getImgUrl(), transactionDTO.isBase64()), ACTIVEMQ_QUEUE_PROPERTIES_WORKFLOW);
     }
 }

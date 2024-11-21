@@ -5,12 +5,20 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serial;
 import java.io.Serializable;
 
+@Getter
+@Setter
 @Entity
 public class CardReference extends CardBasics implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = -7059808842444736266L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
@@ -20,13 +28,6 @@ public class CardReference extends CardBasics implements Serializable {
 
 	public CardReference(String name, String description, String family, String affinity,String imgUrl,String smallImgUrl) {
 		super(name, description, family,affinity,imgUrl,smallImgUrl);
-	}
-
-	public Integer getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
 	}
 
 }

@@ -33,9 +33,4 @@ public class ActiveMQ {
         });
 
     }
-
-    public void startListener(ActiveMQListener activeMQListener){
-        Thread thread = new Thread(activeMQListener);
-        thread.start();
-    }
 }

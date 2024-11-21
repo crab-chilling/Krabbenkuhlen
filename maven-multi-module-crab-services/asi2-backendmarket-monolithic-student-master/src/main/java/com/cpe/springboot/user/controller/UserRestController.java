@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.cpe.springboot.common.tools.DTOMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.cpe.springboot.common.tools.DTOMapper;
 import com.cpe.springboot.user.model.AuthDTO;
 import com.cpe.springboot.user.model.UserDTO;
 import com.cpe.springboot.user.model.UserModel;
