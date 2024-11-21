@@ -1,9 +1,6 @@
 package com.cpe.springboot.AsyncWorker;
 
-import com.cpe.springboot.AsyncWorker.models.ImageDTO;
-import com.cpe.springboot.AsyncWorker.models.ImageRequest;
-import com.cpe.springboot.AsyncWorker.models.PromptDTO;
-import com.cpe.springboot.AsyncWorker.models.PromptRequest;
+import com.cpe.springboot.AsyncWorker.dto.*;
 import com.cpe.springboot.activemq.AbstractJmsListener;
 import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.dto.queues.DescriptionDTO;
@@ -52,39 +49,39 @@ public class AsyncListener extends AbstractJmsListener {
         Object object = this.messageToObject(textMessage);
         GenericMQDTO responseDTO = null;
 
-        if (object instanceof DescriptionDTO descriptionDTOQueue) {
+        if (object instanceof DescPromptDTO descPromptDTO) {
 
             PromptRequest promptRequest = new PromptRequest(
-                    descriptionDTOQueue.getDescription()
+                    descPromptDTO.getDescPrompt()
             );
 
-            PromptDTO promptDto = client.post()
+            PromptDTOResponse promptDto = client.post()
                     .uri(ENDPOINT_GENERATE_DESCRIPTION)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Mono.just(promptRequest), PromptRequest.class)
                     .retrieve()
-                    .bodyToMono(PromptDTO.class)
+                    .bodyToMono(PromptDTOResponse.class)
                     .block();
 
             responseDTO = new DescriptionDTO(
-                    descriptionDTOQueue.getTransactionId(),
+                    descPromptDTO.getTransactionId(),
                     promptDto.getPrompt()
             );
-        } else if (object instanceof com.cpe.springboot.dto.queues.ImageDTO imageDTOQueue) {
+        } else if (object instanceof ImagePromptDTO imagePromptDTO) {
             ImageRequest imageRequest = new ImageRequest(
-                    imageDTOQueue.getImgUrl(),
+                    imagePromptDTO.getPrompt(),
                     ""
             );
-            ImageDTO imageDto = client.post()
+            ImageDTOResponse imageDto = client.post()
                     .uri(ENDPOINT_GENERATE_IMAGE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Mono.just(imageRequest), ImageRequest.class)
                     .retrieve()
-                    .bodyToMono(ImageDTO.class)
+                    .bodyToMono(ImageDTOResponse.class)
                     .block();
 
             responseDTO = new com.cpe.springboot.dto.queues.ImageDTO(
-                    imageDTOQueue.getTransactionId(),
+                    imagePromptDTO.getTransactionId(),
                     imageDto.getUrl(),
                     false
             );

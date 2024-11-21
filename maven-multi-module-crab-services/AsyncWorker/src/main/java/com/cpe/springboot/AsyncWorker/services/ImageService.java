@@ -1,5 +1,6 @@
 package com.cpe.springboot.AsyncWorker.services;
 
+import com.cpe.springboot.AsyncWorker.dto.ImagePromptDTO;
 import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.dto.queues.ImageDTO;
 import com.cpe.springboot.dto.requests.ImageTransactionDTO;
@@ -20,7 +21,7 @@ public class ImageService {
 
     public void createImage(ImageTransactionDTO imageTransactionDTO) {
         log.info("Creating image");
-        ImageDTO imageDto = new com.cpe.springboot.dto.queues.ImageDTO(imageTransactionDTO.getTransactionId(), imageTransactionDTO.getImagePrompt(), true);
-        activeMQ.publish(imageDto, ACTIVEMQ_QUEUE_ASYNCWORKER_WORKFLOW);
+        ImagePromptDTO imagePromptDTO = new ImagePromptDTO(imageTransactionDTO.getTransactionId(), imageTransactionDTO.getImagePrompt());
+        activeMQ.publish(imagePromptDTO, ACTIVEMQ_QUEUE_ASYNCWORKER_WORKFLOW);
     }
 }

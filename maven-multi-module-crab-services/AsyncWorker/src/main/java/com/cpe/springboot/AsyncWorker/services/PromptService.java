@@ -1,5 +1,6 @@
 package com.cpe.springboot.AsyncWorker.services;
 
+import com.cpe.springboot.AsyncWorker.dto.DescPromptDTO;
 import com.cpe.springboot.activemq.ActiveMQ;
 import com.cpe.springboot.dto.queues.DescriptionDTO;
 import com.cpe.springboot.dto.requests.DescriptionTransactionDTO;
@@ -20,7 +21,7 @@ public class PromptService {
 
     public void createDesc(DescriptionTransactionDTO descriptionTransactionDTO) {
         log.info("[PromptService] Sending description to Ollama");
-        DescriptionDTO descriptionDTO = new DescriptionDTO(descriptionTransactionDTO.getTransactionId(), descriptionTransactionDTO.getDescPrompt());
-        activeMQ.publish(descriptionDTO, ACTIVEMQ_QUEUE_ASYNCWORKER_WORKFLOW);
+        DescPromptDTO descPromptDTO = new DescPromptDTO(descriptionTransactionDTO.getTransactionId(), descriptionTransactionDTO.getDescPrompt());
+        activeMQ.publish(descPromptDTO, ACTIVEMQ_QUEUE_ASYNCWORKER_WORKFLOW);
     }
 }

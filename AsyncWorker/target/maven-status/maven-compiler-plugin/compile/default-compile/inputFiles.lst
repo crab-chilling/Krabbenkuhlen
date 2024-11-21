@@ -1,9 +1,0 @@
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/AsyncWorkerApplication.java
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/controllers/AsyncJobController.java
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/models/DescriptionResponse.java
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/models/GenerationRequest.java
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/models/ImageRequest.java
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/models/ImageResponse.java
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/models/PromptRequest.java
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/services/ImageService.java
-/Users/i5-650/github/crab-chilling/Krabbenkuhlen/AsyncWorker/src/main/java/com/cpe/springboot/AsyncWorker/services/PromptService.java
