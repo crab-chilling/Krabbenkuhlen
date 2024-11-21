@@ -28,9 +28,9 @@ public class AsyncListener extends AbstractJmsListener {
 
     @Override
     @JmsListener(destination = "properties", containerFactory = "queueConnectionFactory")
-    public void traitementService(TextMessage textMessage) throws JMSException, JsonProcessingException {
+    public void traitementService(TextMessage textMessage) throws JMSException, JsonProcessingException, ClassNotFoundException {
 
-        Object object = messageToObject(textMessage);
+        GenericMQDTO object = (GenericMQDTO) messageToObject(textMessage);
 
         if (object instanceof ImageDTO imageDTO) {
             PropertiesDTO propertiesDTO = service.getPropertiesFromImgUrl(imageDTO);

@@ -31,9 +31,9 @@ public class AsyncTasksListener extends AbstractJmsListener {
     @Override
     @Transactional
     @JmsListener(destination = "tasks", containerFactory = "queueConnectionFactory")
-    public void traitementService(TextMessage textMessage) throws JMSException, JsonProcessingException {
+    public void traitementService(TextMessage textMessage) throws JMSException, JsonProcessingException, ClassNotFoundException {
 
-        Object object = messageToObject(textMessage);
+        GenericMQDTO object = (GenericMQDTO) messageToObject(textMessage);
 
         log.info("[AsyncTasksListener] Asynchronous tasks listener starting.");
         Transaction transaction = null;

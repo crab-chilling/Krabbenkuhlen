@@ -40,9 +40,9 @@ public class TaskListener extends AbstractJmsListener {
 
     @Override
     @JmsListener(destination = "createdcard", containerFactory = "queueConnectionFactory")
-    public void traitementService(TextMessage textMessage) throws JsonProcessingException, JMSException {
+    public void traitementService(TextMessage textMessage) throws JsonProcessingException, JMSException, ClassNotFoundException {
 
-        Object object = this.messageToObject(textMessage);
+        GenericMQDTO object = (GenericMQDTO) this.messageToObject(textMessage);
 
         if(object instanceof CreatedCardDTO createdCardDTO) {
 

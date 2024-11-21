@@ -44,9 +44,9 @@ public class AsyncListener extends AbstractJmsListener {
 
     @Override
     @JmsListener(destination = "asyncworker", containerFactory = "queueConnectionFactory")
-    public void traitementService(TextMessage textMessage) throws JMSException, JsonProcessingException {
+    public void traitementService(TextMessage textMessage) throws JMSException, JsonProcessingException, ClassNotFoundException {
 
-        Object object = this.messageToObject(textMessage);
+        GenericMQDTO object = (GenericMQDTO) this.messageToObject(textMessage);
         GenericMQDTO responseDTO = null;
 
         if (object instanceof DescPromptDTO descPromptDTO) {

@@ -16,10 +16,11 @@ public abstract class AbstractJmsListener {
     protected ObjectMapper objectMapper;
     protected ActiveMQ activeMQ;
 
-    public abstract void traitementService(TextMessage textMessage) throws JsonProcessingException, JMSException;
+    public abstract void traitementService(TextMessage textMessage) throws JsonProcessingException, JMSException, ClassNotFoundException;
 
-    public Object messageToObject(TextMessage message) throws JMSException, JsonProcessingException {
+    public Object messageToObject(TextMessage message) throws JMSException, JsonProcessingException, ClassNotFoundException {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper.readValue(message.getText(), Object.class);
+        String clazz = message.getStringProperty("ObjectType");
+        return objectMapper.readValue(message.getText(), Class.forName(clazz));
     }
 }
