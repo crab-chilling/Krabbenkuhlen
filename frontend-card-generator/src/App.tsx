@@ -15,7 +15,6 @@ import Market from "./views/Market";
 import { ToastContainer } from "react-toastify";
 import Inventory from "./views/Inventory";
 import Generator from "./views/Generator";
-import Play from "./views/Play";
 import Room from "./views/Room";
 import Lobby from "./views/Lobby";
 

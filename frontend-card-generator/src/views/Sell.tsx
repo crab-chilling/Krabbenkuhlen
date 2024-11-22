@@ -22,9 +22,9 @@ export default function Sell() {
 
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
-  const [selectedCard, setSelectedCard] = useState(null);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
-  const handleCardSelect = (card) => {
+  const handleCardSelect = (card: Card) => {
     setSelectedCard(card);
   };
 

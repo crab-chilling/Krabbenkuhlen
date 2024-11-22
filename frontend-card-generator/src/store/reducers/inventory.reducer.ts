@@ -9,7 +9,7 @@ const initialState = {
   cards: [],
 };
 
-const inventoryReducer = (state = initialState, action) => {
+const inventoryReducer = (state = initialState, action: any) => {
   switch (action.type) {
     case SET_INVENTORY_CARDS:
       return {
@@ -26,7 +26,7 @@ const inventoryReducer = (state = initialState, action) => {
     case UPDATE_INVENTORY_CARD:
       return {
         ...state,
-        cards: state.cards.map((card) =>
+        cards: state.cards.map((card: any) =>
           card.id === action.payload.id ? action.payload : card,
         ),
       };
@@ -34,7 +34,7 @@ const inventoryReducer = (state = initialState, action) => {
     case DELETE_INVENTORY_CARD:
       return {
         ...state,
-        cards: state.cards.filter((card) => card.id !== action.payload),
+        cards: state.cards.filter((card: any) => card.id !== action.payload),
       };
 
     default:
