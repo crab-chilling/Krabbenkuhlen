@@ -38,6 +38,9 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // https://medium.com/@kishorkrishna/cant-access-latest-state-inside-socket-io-listener-heres-how-to-fix-it-1522a5abebdb
+  const selectedUserRef = useRef(selectedUser);
+
   const connection = useRef<Socket | null>(null);
 
   const fetchUsers = async () => {
@@ -56,6 +59,7 @@ const Chat: React.FC = () => {
         cardList: [],
       };
 
+      console.log("setUsers: ", [{ ...allUsersOption }, ...filteredUsers]);
       setUsers([{ ...allUsersOption }, ...filteredUsers]);
     } catch (error) {
       console.error(error);
@@ -80,7 +84,9 @@ const Chat: React.FC = () => {
   const fetchChatHistory = async (from: number, to: number) => {
     setIsLoadingMessages(true);
     try {
-      setChatHistory(await getHistory(from, to));
+      const history = await getHistory(from, to);
+      console.log("history: ", history);
+      setChatHistory(history);
     } catch (error) {
       console.error(error);
     } finally {
@@ -97,19 +103,22 @@ const Chat: React.FC = () => {
   const handleUserSelect = (event: SelectChangeEvent<number>) => {
     const id = event.target.value as number;
     const user = users.find((u) => u.id === id);
-    setNewMessage("");
-    setSelectedUser(user || null);
-    setChatHistory([]);
-    if (user) fetchChatHistory(user.id, userId);
+    if (user) {
+      setNewMessage("");
+      setSelectedUser(user);
+      selectedUserRef.current = user;
+      setChatHistory([]);
+      fetchChatHistory(user.id, userId);
+    }
   };
 
   const handleSendMessage = () => {
-    if (selectedUser) {
+    if (selectedUser && newMessage.length > 0) {
       const message: Message = {
         from: userId,
         to: selectedUser.id,
         message: newMessage,
-        sentAt: new Date(),
+        date: new Date(),
       };
       sendSocketMessage(message);
       setChatHistory((prev) => [...prev, message]);
@@ -120,8 +129,8 @@ const Chat: React.FC = () => {
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      handleSendMessage();
       event.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -139,10 +148,10 @@ const Chat: React.FC = () => {
 
   const onMessageReceive = (message: Message) => {
     console.log("Received message: ", message);
-    if (
-      selectedUser?.id === message.from ||
-      (message.to === ALL_USERS_ID && selectedUser?.id === ALL_USERS_ID)
-    ) {
+    const mustDisplayMessage =
+      selectedUserRef?.current?.id === message.from ||
+      (message.to === ALL_USERS_ID && selectedUser?.id === ALL_USERS_ID);
+    if (mustDisplayMessage) {
       setChatHistory((prev) => [...prev, message]);
     }
   };
@@ -217,7 +226,7 @@ const Chat: React.FC = () => {
                 ? selectedUser.id
                 : ""
             }
-            onChange={handleUserSelect}
+            onChange={(event) => handleUserSelect(event)}
             label="Select User"
           >
             {users.map((user) => (
@@ -264,7 +273,7 @@ const Chat: React.FC = () => {
             ) : (
               chatHistory.map((msg) => (
                 <Box
-                  key={String(msg.sentAt)}
+                  key={String(msg.date)}
                   sx={{
                     display: "flex",
                     justifyContent:
