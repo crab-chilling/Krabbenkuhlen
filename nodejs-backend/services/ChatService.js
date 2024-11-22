@@ -36,7 +36,6 @@ class ChatService {
   }
 
   async saveMessage(message) {
-    // TODO: create the Spring API then adapt this call
     try {
       const payload = {
         message: message.message,
