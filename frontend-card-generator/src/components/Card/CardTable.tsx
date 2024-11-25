@@ -19,9 +19,9 @@ interface Props {
 
 export default function CardTable({
   cards,
-  onSelectCard = () => {},
+  onSelectCard = () => { },
   enableRowSelection = false,
-  onSelectionChange = () => {},
+  onSelectionChange = () => { },
 }: Props) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -31,7 +31,7 @@ export default function CardTable({
     onSelectionChange(selection);
   }, [selection, onSelectionChange]);
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
 

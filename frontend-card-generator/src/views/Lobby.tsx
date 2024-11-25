@@ -11,7 +11,7 @@ export default function Lobby() {
   const maxSelectionCards = 1;
   const navigate = useNavigate();
   const userCards = useSelector(selectInventoryCards);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading] = useState<boolean>(false);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
 
   const handleSelectionChange = (selectedIds: number[]) => {

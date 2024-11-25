@@ -12,7 +12,7 @@ export default function Inventory() {
   const isAuthenticated = useSelector(isUserAuthenticated);
   const userCards = useSelector(selectInventoryCards);
 
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
