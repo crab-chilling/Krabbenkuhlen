@@ -2,7 +2,7 @@ import ChatService from "../services/ChatService.js";
 
 export default function (io) {
   io.on("connection", (socket) => {
-    console.log("A user connected", socket.id);
+    //console.log("A user connected", socket.id);
 
     const userId = socket.handshake.query.userId;
     ChatService.addUser(userId, socket.id);

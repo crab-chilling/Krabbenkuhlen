@@ -4,16 +4,15 @@ let waitingPlayers = [];
 
 export default function (io)  {
     io.on('connection', (socket) => {
-        socket.on('findMatch', () => {
-            console.log(`Joueur ${socket.id} cherche une partie`)
-            waitingPlayers.push(socket)
-
-
-
-            const rooms = Array.from(io.of('/').adapter.rooms.keys()).filter((room) => room.startsWith('room-'));
+        console.log("A user connected", socket.id);
+        socket.on('findMatch', (data) => {
+            console.log(`Joueur ${data.player.id} cherche une partie`)
+            waitingPlayers.push(data.player)
+            let roomId = `gaming-room-${socket.id}`
+            const rooms = Array.from(io.of('/').adapter.rooms.keys()).filter((room) => room.startsWith('gaming-room-'));
+            
 
             console.log(rooms)
-            let roomId = `room-${socket.id}`
             if(rooms.length !== 0){
                 roomId = rooms.shift();
                 console.log("Joining room : ", roomId)
@@ -32,15 +31,27 @@ export default function (io)  {
             let roomMembers = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
             console.log(`Membres de la room ${roomId} :`, roomMembers);
             if(waitingPlayers.length >= 2){
+                console.log(waitingPlayers)
                 const player1 = waitingPlayers.shift();
                 const player2 = waitingPlayers.shift();
 
                 console.log(roomId)
-                console.log(`Match trouvé ${player1.id} contre ${player2.id}`);
+                console.log(`Match trouvé ${player1} contre ${player2}`);
                 io.emit('matchFound', {
-                    players: [player1.id, player2.id]
+                    roomId,
+                    players: [player1, player2]
                 })
+                GameService.initGame(player1, player2, socket);
+                
             }
+        })
+
+        socket.on('attack', (data) => {
+            GameService.handleAttack(data, io)
+        })
+
+        socket.on('endTurn', () => {
+            GameService.endTurn(io)
         })
     })
 

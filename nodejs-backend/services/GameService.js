@@ -13,15 +13,12 @@ class GameService {
         this.initGame = this.initGame.bind(this);
     }
 
-    initGame(io, socket) {
-        console.log("Initializing game" + socket.id)
-        const player = new Player(socket.id, 30, null)
-        this.players.push(player);
+    initGame(player1, player2, socket) {
+        console.log("Initializing game")
+        this.players.push(player1);
+        this.players.push(player2);
 
-        socket.emit('gameInfo', {
-            message: "Game started",
-            players: this.players.map(p => p.getPlayerInfo())
-        });
+        socket.emit('yourTurn', {player: player2})
 
 
     }
@@ -36,30 +33,29 @@ class GameService {
         return (attack * (isCritical ? 2 : 1)) - defense;
     }
 
-    endTurn(io, socket){
+    endTurn(io){
         const player = this.players[this.currentPlayerIndex];
-        if(player.id !== socket.id){
-            socket.emit('error', {messsage: "Ce n'est pas votre tour !"});
-            return;
-        }
+        console.log("Turn to ", player)
+        io.emit('yourTurn', { player: this.players[this.currentPlayerIndex]});
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-        io.emit('nextTurn', { playerId: this.players[this.currentPlayerIndex].id});
     }
 
-    handleAttack(io, socket, data) {
+    handleAttack(data, io) {
+        console.log("attaque")
+        console.log(io)
         const attacker = this.players[this.currentPlayerIndex];
-        if(attacker.id != socket.id){
-            socket.emit('error', {message: "Ce n'est pas votre tour !"});
+        console.log(attacker)
+        if(attacker.id != data.attackerId){
+            io.emit('error', {message: "Ce n'est pas votre tour !"});
             return;
         }
-
-        const { targetCardId, attackerCardId, targetId } = data
-        const target = this.players.find(p => p.id === targetId);
-        const targetCard = target.getCard(targetCardId);
-        const attackerCard = attacker.getCard(attackerCardId)
+        const target = this.players.find(p => p.id === data.targetId);
+        console.log(target)
+        const targetCard = target.getCard(data.targetCardId);
+        const attackerCard = attacker.getCard(data.attackerId)
 
         if (!attackerCard || !targetCard || attacker.actionPoints < attackerCard.energy){
-            socket.emit('error', {message: "Action impossible, points d'actions insuffisants ou cartes invalides"});
+            io.emit('error', {message: "Action impossible, points d'actions insuffisants ou cartes invalides"});
             return;
         }
 

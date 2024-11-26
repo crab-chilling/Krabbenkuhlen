@@ -1,7 +1,6 @@
 export default class Player {
-    constructor(id, health, cards){
+    constructor(id, cards){
         this.id = id;
-        this.health = health;
         this.actionPoints = 10;
         this.cards = cards;
     }
