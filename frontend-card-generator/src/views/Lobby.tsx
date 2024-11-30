@@ -17,7 +17,7 @@ export default function Lobby() {
   const userLastName = useSelector(selectUserLastName);
   const userSurname = useSelector(selectUserSurname);
 
-  const maxSelectionCards = 1;
+  const maxSelectionCards = 2;
   const navigate = useNavigate();
   const userCards = useSelector(selectInventoryCards);
   const [loading] = useState<boolean>(false);

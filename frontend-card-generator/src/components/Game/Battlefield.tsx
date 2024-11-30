@@ -3,7 +3,8 @@ import React from 'react';
 import { Box } from '@mui/material';
 import CardComponent from './Card';
 
-const Battlefield = ({ cards, onCardClick, selectedCardId }) => {
+const Battlefield = ({ cards, onCardClick, selectedCardId, isSelectable }) => {
+
     return (
         <Box
             sx={{
@@ -16,12 +17,13 @@ const Battlefield = ({ cards, onCardClick, selectedCardId }) => {
                 overflowX: 'auto',
             }}
         >
-            {cards.map(card => (
+            {cards.cards.map(card => (
                 <CardComponent
                     key={card.id}
                     card={card}
                     onClick={onCardClick}
                     isSelected={selectedCardId === card.id}
+                    isSelectable={isSelectable(card)}
                 />
             ))}
         </Box>

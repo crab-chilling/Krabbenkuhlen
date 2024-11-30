@@ -1,12 +1,14 @@
 export default class Player {
-    constructor(id, cards){
+    constructor(id, surname, lastname, cards){
         this.id = id;
-        this.actionPoints = 10;
+        this.actionPoints = 100;
+        this.surname = surname;
+        this.lastname = lastname;
         this.cards = cards;
     }
 
     getCard(cardId) {
-        return this.cards.find(card => card.id === cardId);
+        return this.cards.cards.find(card => card.id === cardId);
     }
 
     getPlayerInfo() {
@@ -14,6 +16,9 @@ export default class Player {
     }
 
     hasNoCardLeft(){
-        return this.cards.every(card => card.hp <= 0);
+        console.log("test")
+        console.log("cartes :", this.cards.cards)
+        console.log(this.cards.cards.every(card => card.hp <= 0))
+        return this.cards.cards.every(card => card.hp <= 0);
     }
 }

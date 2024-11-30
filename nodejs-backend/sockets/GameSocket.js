@@ -1,3 +1,4 @@
+import Player from '../entity/Player.js';
 import GameService from '../services/GameService.js'
 
 let waitingPlayers = [];
@@ -7,7 +8,7 @@ export default function (io)  {
         console.log("A user connected", socket.id);
         socket.on('findMatch', (data) => {
             console.log(`Joueur ${data.player.id} cherche une partie`)
-            waitingPlayers.push(data.player)
+            waitingPlayers.push(new Player(data.player.id, data.player.surname, data.player.lastName, data.player.cards))
             let roomId = `gaming-room-${socket.id}`
             const rooms = Array.from(io.of('/').adapter.rooms.keys()).filter((room) => room.startsWith('gaming-room-'));
             
@@ -27,15 +28,11 @@ export default function (io)  {
                     roomId
                 });
             }
-
-            let roomMembers = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
-            console.log(`Membres de la room ${roomId} :`, roomMembers);
             if(waitingPlayers.length >= 2){
                 console.log(waitingPlayers)
                 const player1 = waitingPlayers.shift();
                 const player2 = waitingPlayers.shift();
 
-                console.log(roomId)
                 console.log(`Match trouvé ${player1} contre ${player2}`);
                 io.emit('matchFound', {
                     roomId,
@@ -54,7 +51,4 @@ export default function (io)  {
             GameService.endTurn(io)
         })
     })
-
-    io.on('attack', (data) => GameService.handleAttack(io, socket, data));
-    io.on('endturn', () => GameService.endTurn(io, socket));
 }

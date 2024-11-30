@@ -6,7 +6,6 @@ import Battlefield from './Battlefield';
 
 const PlayerArea = ({ hero, battlefieldCards, onCardClick, isSelectable, selectedCard }) => {
     const selectedCardId = selectedCard ? selectedCard.id : null;
-
     return (
         <Box
             sx={{
@@ -22,15 +21,8 @@ const PlayerArea = ({ hero, battlefieldCards, onCardClick, isSelectable, selecte
                 cards={battlefieldCards}
                 onCardClick={onCardClick}
                 selectedCardId={selectedCardId}
+                isSelectable={(card) => isSelectable && card.hp > 0} 
             />
-            <Typography variant="subtitle1" align="center" sx={{ marginTop: 2 }}>
-                {isSelectable ? 'Cliquez sur une carte pour la sélectionner comme attaquante.' : ''}
-            </Typography>
-            {selectedCard && (
-                <Typography variant="body2" align="center" color="secondary">
-                    Carte sélectionnée : {selectedCard.name}
-                </Typography>
-            )}
         </Box>
     );
 };

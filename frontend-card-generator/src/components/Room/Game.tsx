@@ -6,6 +6,7 @@ import { selectUserLastName } from "../../store/selectors/user.selectors";
 import { selectUserSurname } from "../../store/selectors/user.selectors";
 import { Button, Grid, Box, Typography, Dialog, DialogContent, DialogTitle, DialogActions, CircularProgress  } from "@mui/material";
 import  PlayerArea from '../Game/PlayerArea';
+import { useNavigate } from "react-router-dom";
 
 
 const Game: React.FC = (cards) => {
@@ -13,45 +14,27 @@ const Game: React.FC = (cards) => {
     const userId = useSelector(selectUserId);
     const userLastName = useSelector(selectUserLastName);
     const userSurname = useSelector(selectUserSurname);
+    const navigate = useNavigate();
 
     const [currentPlayer, setCurrentPlayer] = useState(null);
+    const [initialStateCurrentPlayer, setInitialStateCurrentPlayer] = useState(null)
+    const [initialStateOpponent, setInitialStateOpponent] = useState(null)
     const [opponent, setOpponent] = useState(null);
     const [roomId, setRoomId] = useState(null);
     const connection = useRef<Socket | null>(null);
     const [isSearching, setIsSearching] = useState(false);
 
-    const [opponentBattlefield, setOpponentBattlefield] = useState([
-        { id: 'opponent-card1', name: 'Golem de Pierre', hp: 25, attack: 5 },
-        { id: 'opponent-card2', name: 'Spectre Fantomatique', hp: 10, attack: 7},
-        
-    ]);
+    const [openErrorDialog, setOpenErrorDialog] = useState(false);
+    const [errorTitle, setErrorTitle] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
 
     const [selectedAttackerCard, setSelectedAttackerCard] = useState(null);
     const [selectedTargetCard, setSelectedTargetCard] = useState(null);
 
-    const [selectedTargetCardId, setSelectedTargetCardId] = useState('');
     const [isMyTurn, setIsMyTurn] = useState(false); 
-    const [gameOver, setGameOver] = useState(false);
-    const [winner, setWinner] = useState('');
+    const [winner, setWinner] = useState(null);
     const [openDialog, setOpenDialog] = useState(false);
 
-    const [opponentHero, setOpponentHero] = useState({
-        name: 'Adversaire',
-        actpoints: 10,
-        image: '/images/opponent-hero.png',
-    });
-
-    const [playerHero, setPlayerHero] = useState({
-        name: userSurname + " " + userLastName,
-        actpoints: 10,
-        image: '/images/player-hero.png',
-    });
-
-
-    const [playerBattlefield, setPlayerBattlefield] = useState([
-        { id: 'player-card1', name: 'Dragon de Feu', hp: 20, attack: 8},
-        { id: 'player-card2', name: 'Esprit de l\'Eau', hp: 15, attack: 6 },
-    ]);
 
     useEffect(() => {    
         connection.current = io("http://localhost:3000", {
@@ -63,6 +46,8 @@ const Game: React.FC = (cards) => {
         connection.current.on('attackResult', handleAttackResult)
         connection.current.on('yourTurn', handleYourTurn)
         connection.current.on('endTurn', handleEndTurn)
+        connection.current.on('error', handleError)
+        connection.current.on('gameOver', handleGameOver)
     
         connection.current.on("disconnect", () => {
           console.log("Socket.IO connection closed");
@@ -75,82 +60,68 @@ const Game: React.FC = (cards) => {
         };
       }, []);
 
+    const handleError = (data) => {
+        setErrorTitle(data.errorTitle);
+        setErrorMessage(data.errorMessage);
+
+        setOpenErrorDialog(true);
+    } 
+
+
+    const handleGameOver = (data) => {
+        setOpenDialog(true)
+    }  
     const handleMatchFound = (data) => {
-        console.log("Match trouvé ", data)
         setRoomId(data.roomId)
-        const current = data.players.find(player => player === userId);
-        const opponentPlayer = data.players.find(player => player !== userId);
+        const current = data.players.find(player => player.id === userId);
+        const opponentPlayer = data.players.find(player => player.id !== userId);
         setCurrentPlayer(current);
         setOpponent(opponentPlayer);
+        setInitialStateCurrentPlayer(current);
+        setInitialStateOpponent(opponent);
         setIsSearching(false);
     }
 
     const handleYourTurn = (data) => {
-        console.log("turn", data)
         if(data.player.id == userId){
+            setCurrentPlayer(data.player)
             setIsMyTurn(true);
         }
         
     }
 
     const handleEndTurn = (data) => {
-        console.log(data)
         if(data.player.id === userId){
             setIsMyTurn(false);
         }
     }
 
     const handleAttackResult = (data) => {
-        console.log(data)
-        const { damage, targetCardHp, targetCardId, attackerId } = data;
-
-        if (attackerId === userId) {
-            // Attaque du joueur, mettre à jour les HP de la carte adversaire
-            setOpponentBattlefield((prev) =>
-                prev.map((card) =>
-                    card.id === targetCardId ? { ...card, hp: targetCardHp } : card
-                )
-            );
-        } else {
-            // Attaque de l'adversaire, mettre à jour les HP de la carte du joueur
-            setPlayerBattlefield((prev) =>
-                prev.map((card) =>
-                    card.id === targetCardId ? { ...card, hp: targetCardHp } : card
-                )
-            );
+        if(data.attacker.id === userId){
+            setCurrentPlayer(data.attacker);
+            setOpponent(data.target);
+        }else {
+            setOpponent(data.attacker)
+            setCurrentPlayer(data.target)
         }
 
-        // Vérifier si une carte est détruite
-        checkCardDestruction();
+
     };
 
-    const checkCardDestruction = () => {
-        const opponentAliveCards = opponentBattlefield.filter((card) => card.hp > 0);
-        const playerAliveCards = playerBattlefield.filter((card) => card.hp > 0);
-
-        if (opponentAliveCards.length === 0 && connection.current?.connected) {
-            // Le joueur a gagné
-            connection.current.emit('gameOver', { roomId, winnerId: userId });
-        } else if (playerAliveCards.length === 0 && connection.current?.connected) {
-            // L'adversaire a gagné
-            connection.current.emit('gameOver', { roomId, winnerId: opponent });
-        }
-    };
 
     const handleAttack = () => {
-        console.log("ATTAQUE")
         if (!selectedAttackerCard || !selectedTargetCard) {
             alert('Veuillez sélectionner une carte attaquante et une carte cible.');
             return;
         }
 
-        if(connection.current?.connected){
+        if(connection.current?.connected && currentPlayer != null && opponent != null){
             connection.current.emit('attack', {
                 roomId,
-                attackerId: userId,
-                targetId: opponent,
-                attackerCardId: selectedAttackerCard,
-                targetCardId: selectedTargetCard,
+                attackerId: currentPlayer.id,
+                targetId: opponent.id,
+                attackerCardId: selectedAttackerCard.id,
+                targetCardId: selectedTargetCard.id,
             });
         }
 
@@ -163,7 +134,7 @@ const Game: React.FC = (cards) => {
         setIsSearching(true);
         if(connection.current?.connected){
             connection.current.emit('findMatch',{
-                player : {id: userId, cards: cards}
+                player : {id: userId , surname: userSurname, lastName: userLastName, cards: cards}
             });
         }
     }
@@ -175,8 +146,15 @@ const Game: React.FC = (cards) => {
         }
     }
 
-    const handleDialogClose = () => {
+    const handleCloseErrorDialog = () => {
+        setOpenErrorDialog(false);
+        setErrorTitle(null);
+        setErrorMessage(null);
+    }
+
+    const handleCloseDialog = () => {
         setOpenDialog(false);
+        setRoomId(null)
     };
 
     return (
@@ -188,7 +166,7 @@ const Game: React.FC = (cards) => {
                     flexDirection="column"
                     alignItems="center"
                     justifyContent="center"
-                    height="calc(100% - 64px)" // Ajustement pour la hauteur de l'AppBar
+                    height="calc(100% - 64px)"
                 >
                     <Button
                         onClick={findMatch}
@@ -213,11 +191,10 @@ const Game: React.FC = (cards) => {
             ) : (
                 // Interface de Jeu
                 <Grid container spacing={4} direction="column" sx={{ height: 'calc(100% - 64px)' }}>
-                    {/* Zone du Joueur (en haut) */}
                     <Grid item xs={12}>
                         <PlayerArea
-                            hero={playerHero}
-                            battlefieldCards={playerBattlefield}
+                            hero={currentPlayer}
+                            battlefieldCards={currentPlayer.cards}
                             onCardClick={(card) => {
                                 if (isMyTurn) {
                                     setSelectedAttackerCard(card);
@@ -228,11 +205,10 @@ const Game: React.FC = (cards) => {
                         />
                     </Grid>
 
-                    {/* Zone de l'Adversaire (en dessous) */}
                     <Grid item xs={12}>
                         <PlayerArea
-                            hero={opponentHero}
-                            battlefieldCards={opponentBattlefield}
+                            hero={opponent}
+                            battlefieldCards={opponent.cards}
                             onCardClick={(card) => {
                                 if (isMyTurn) {
                                     setSelectedTargetCard(card);
@@ -278,14 +254,26 @@ const Game: React.FC = (cards) => {
             )}
 
             {/* Dialog de Fin de Partie */}
-            <Dialog open={openDialog} onClose={handleDialogClose}>
-                <DialogTitle>{winner}</DialogTitle>
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>Match terminé</DialogTitle>
                 <DialogContent>
-                    <Typography>La partie est terminée. Merci d'avoir joué !</Typography>
+                    <Typography>Partie terminé !</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleDialogClose} color="primary">
-                        Retour au Matchmaking
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Retour au matchmaking
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={openErrorDialog} onClose={handleCloseErrorDialog}>
+                <DialogTitle>{errorTitle}</DialogTitle>
+                <DialogContent>
+                    <Typography>{errorMessage}</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseErrorDialog} color="primary">
+                        Retour
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -18,6 +18,8 @@ class GameService {
         this.players.push(player1);
         this.players.push(player2);
 
+        console.log("init game ",this.players)
+
         socket.emit('yourTurn', {player: player2})
 
 
@@ -35,49 +37,45 @@ class GameService {
 
     endTurn(io){
         const player = this.players[this.currentPlayerIndex];
-        console.log("Turn to ", player)
+        player.actionPoints = 100;
         io.emit('yourTurn', { player: this.players[this.currentPlayerIndex]});
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
     }
 
     handleAttack(data, io) {
-        console.log("attaque")
-        console.log(io)
-        const attacker = this.players[this.currentPlayerIndex];
-        console.log(attacker)
-        if(attacker.id != data.attackerId){
-            io.emit('error', {message: "Ce n'est pas votre tour !"});
-            return;
-        }
+        const attacker = this.players.find(a => a.id === data.attackerId)
         const target = this.players.find(p => p.id === data.targetId);
-        console.log(target)
         const targetCard = target.getCard(data.targetCardId);
-        const attackerCard = attacker.getCard(data.attackerId)
+        const attackerCard = attacker.getCard(data.attackerCardId)
 
-        if (!attackerCard || !targetCard || attacker.actionPoints < attackerCard.energy){
-            io.emit('error', {message: "Action impossible, points d'actions insuffisants ou cartes invalides"});
+        if (!attackerCard || !targetCard){
+            io.emit('error', {errorTitle: "Carte inconnu", errorMessage: "Vous n'avez pas sélectionner une de vos cartes ou une carte de l'adversaire"})
+            return;
+        }
+        if(attacker.actionPoints < attackerCard.energy){
+            io.emit('error', {errorTitle: "Points d'actions insuffisants", errorMessage: "Vous n'avez pas assez de points d'actions pour faire attaquer cette carte"})
             return;
         }
 
-        const damage = calculateDamage(attackerCard.attack, targetCard.defense);
-        const actualDamage = targetCard.takeDamage(damage);
-
+        const damage = this.calculateDamage(attackerCard.attack, targetCard.defense);
+        targetCard.hp = targetCard.hp - damage;
+        if(isNaN(targetCard.hp)){
+            targetCard.hp = 0;
+        }
         attacker.actionPoints -= attackerCard.energy;
 
+        if(targetCard.hp <= 0){
+            const index = target.cards.cards.indexOf(targetCard)
+            target.cards.cards.splice(index, 1)
+        }
         io.emit('attackResult', {
-            attackerId: attacker.id,
-            targetId: target.id,
-            damage: actualDamage,
-            attackerCard: attackerCard,
-            targetCard: targetCard,
-            targetCardHp: targetCard.hp
+            attacker: attacker,
+            target: target,
         })
 
-        if(targetCard.hp <= 0){
-            io.emit('cardKilled', {targetId: target.id, targetCard: targetCard});
-        }
-        if(target.hasNoCardLeft()){
-            io.emit('Game Over', {winner: attacker.id});
+        if(target.cards.cards.length == 0){
+            this.players = []
+            io.emit('gameOver', {winner: attacker});
         }   
     }
 }
