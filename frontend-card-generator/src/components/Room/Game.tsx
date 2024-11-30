@@ -6,7 +6,6 @@ import { selectUserLastName } from "../../store/selectors/user.selectors";
 import { selectUserSurname } from "../../store/selectors/user.selectors";
 import { Button, Grid, Box, Typography, Dialog, DialogContent, DialogTitle, DialogActions, CircularProgress  } from "@mui/material";
 import  PlayerArea from '../Game/PlayerArea';
-import { useNavigate } from "react-router-dom";
 
 
 const Game: React.FC = (cards) => {
@@ -14,11 +13,8 @@ const Game: React.FC = (cards) => {
     const userId = useSelector(selectUserId);
     const userLastName = useSelector(selectUserLastName);
     const userSurname = useSelector(selectUserSurname);
-    const navigate = useNavigate();
 
     const [currentPlayer, setCurrentPlayer] = useState(null);
-    const [initialStateCurrentPlayer, setInitialStateCurrentPlayer] = useState(null)
-    const [initialStateOpponent, setInitialStateOpponent] = useState(null)
     const [opponent, setOpponent] = useState(null);
     const [roomId, setRoomId] = useState(null);
     const connection = useRef<Socket | null>(null);
@@ -32,7 +28,6 @@ const Game: React.FC = (cards) => {
     const [selectedTargetCard, setSelectedTargetCard] = useState(null);
 
     const [isMyTurn, setIsMyTurn] = useState(false); 
-    const [winner, setWinner] = useState(null);
     const [openDialog, setOpenDialog] = useState(false);
 
 
@@ -77,8 +72,6 @@ const Game: React.FC = (cards) => {
         const opponentPlayer = data.players.find(player => player.id !== userId);
         setCurrentPlayer(current);
         setOpponent(opponentPlayer);
-        setInitialStateCurrentPlayer(current);
-        setInitialStateOpponent(opponent);
         setIsSearching(false);
     }
 
