@@ -1,14 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button, Grid, Stack } from "@mui/material";
 import CardTable from "../components/Card/CardTable";
 import Loader from "../components/Loader";
 import { useSelector } from "react-redux";
+import { selectUserId } from "../store/selectors/user.selectors";
+import { selectUserLastName } from "../store/selectors/user.selectors";
+import { selectUserSurname } from "../store/selectors/user.selectors";
 import { selectInventoryCards } from "../store/selectors/inventory.selectors";
 import CheckIcon from "@mui/icons-material/Check";
 import { useNavigate } from "react-router-dom";
 
+
+
 export default function Lobby() {
-  const maxSelectionCards = 1;
+  const userId = useSelector(selectUserId);
+  const userLastName = useSelector(selectUserLastName);
+  const userSurname = useSelector(selectUserSurname);
+
+  const maxSelectionCards = 2;
   const navigate = useNavigate();
   const userCards = useSelector(selectInventoryCards);
   const [loading] = useState<boolean>(false);
@@ -18,12 +27,12 @@ export default function Lobby() {
     setSelectedCards(selectedIds);
   };
 
+
   const handleJoinClick = () => {
-    console.log("Joining the room...");
-    console.log("Room ID = 536");
-    navigate("/room/" + "536");
+    navigate("/room/", {state : {selectedCardIds: selectedCards}});
   };
 
+  
   return (
     <Grid container spacing={2}>
       <Grid item xs={9}>

@@ -42,7 +42,7 @@ function App() {
             <Route path="/lobby" element={<Lobby />} />
           </Route>
           <Route element={<PrivateRoute />}>
-            <Route path="/room/:id" element={<Room />} />
+            <Route path="/room" element={<Room />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

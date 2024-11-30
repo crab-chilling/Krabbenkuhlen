@@ -1,98 +1,83 @@
-import Player from "../entity/Player";
-import Card from "../entity/Card";
-import axios from "axios";
+import Player from "../entity/Player.js";
 
-let players = [];
-let currentPlayerIndex = 0;
 
 const DODGE_CHANCE = 0.15;
 const CRITICAL_HIT_CHANCE = 0.20;
-const URL = "http://tp.cpe.fr:8083";
-const USER = "/user";
 
-async function game(io) {
-  io.on("connection", (socket) = {
-    await initGame(io, socket);
-  });
+class GameService {
+
+    constructor(){
+        this.players = [];
+        this.currentPlayerIndex = 0;
+
+        this.initGame = this.initGame.bind(this);
+    }
+
+    initGame(player1, player2, socket) {
+        console.log("Initializing game")
+        this.players.push(player1);
+        this.players.push(player2);
+
+        console.log("init game ",this.players)
+
+        socket.emit('yourTurn', {player: player2})
+
+
+    }
+
+    calculateDamage(attack, defense){
+        const isCritical = Math.random() < CRITICAL_HIT_CHANCE;
+        const isDodged = Math.random() < DODGE_CHANCE;
+
+        if(isDodged){
+            return 0;
+        }
+        return (attack * (isCritical ? 2 : 1)) - defense;
+    }
+
+    endTurn(io){
+        const player = this.players[this.currentPlayerIndex];
+        player.actionPoints = 100;
+        io.emit('yourTurn', { player: this.players[this.currentPlayerIndex]});
+        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+    }
+
+    handleAttack(data, io) {
+        const attacker = this.players.find(a => a.id === data.attackerId)
+        const target = this.players.find(p => p.id === data.targetId);
+        const targetCard = target.getCard(data.targetCardId);
+        const attackerCard = attacker.getCard(data.attackerCardId)
+
+        if (!attackerCard || !targetCard){
+            io.emit('error', {errorTitle: "Carte inconnu", errorMessage: "Vous n'avez pas sélectionner une de vos cartes ou une carte de l'adversaire"})
+            return;
+        }
+        if(attacker.actionPoints < attackerCard.energy){
+            io.emit('error', {errorTitle: "Points d'actions insuffisants", errorMessage: "Vous n'avez pas assez de points d'actions pour faire attaquer cette carte"})
+            return;
+        }
+
+        const damage = this.calculateDamage(attackerCard.attack, targetCard.defense);
+        targetCard.hp = targetCard.hp - damage;
+        if(isNaN(targetCard.hp)){
+            targetCard.hp = 0;
+        }
+        attacker.actionPoints -= attackerCard.energy;
+
+        if(targetCard.hp <= 0){
+            const index = target.cards.cards.indexOf(targetCard)
+            target.cards.cards.splice(index, 1)
+        }
+        io.emit('attackResult', {
+            attacker: attacker,
+            target: target,
+        })
+
+        if(target.cards.cards.length == 0){
+            this.players = []
+            io.emit('gameOver', {winner: attacker});
+        }   
+    }
 }
 
-async function initGame(io, socket) {
-  // todo: socket ID joueur
-  // todo: socket array ID card
-  let response = await axios.get(URL + USER + "/" + socket.id);
-  console.log("response: ", response);
-  // todo: fetch info user via ID
-  // todo: fetch info cartes via le user
-  const player = new Player(socket.id)
-  players.push(player);
-
-  socket.emit('gameInfo', {
-    message: "Game started",
-    players: players.map(p => p.getPlayerInfo())
-  });
-
-  socket.on('attack', (data) => handleAttack(io, socket, data));
-  socket.on('endturn', () => endTurn(io, socket));
-}
-
-function handleAttack(io, socket, data) {
-  const attacker = players[currentPlayerIndex];
-  if (attacker.id != socket.id) {
-    socket.emit('error', { message: "Ce n'est pas votre tour !" });
-    return;
-  }
-
-  const { targetCardId, attackerCardId, targetId } = data
-  const target = players.find(p => p.id === targetId);
-  const targetCard = target.getCard(targetCardId);
-  const attackerCard = attacker.getCard(attackerCardId)
-
-  if (!attackerCard || !targetCard || attacker.actionPoints < attackerCard.energy) {
-    socket.emit('error', { message: "Action impossible, points d'actions insuffisants ou cartes invalides" });
-    return;
-  }
-
-  const damage = calculateDamage(attackerCard.attack, targetCard.defense);
-  const actualDamage = targetCard.takeDamage(damage);
-
-  attacker.actionPoints -= attackerCard.energy;
-
-  io.emit('attackResult', {
-    attackerId: attacker.id,
-    targetId: target.id,
-    damage: actualDamage,
-    attackerCard: attackerCard,
-    targetCard: targetCard,
-    targetCardHp: targetCard.hp
-  })
-
-  if (targetCard.hp <= 0) {
-    io.emit('cardKilled', { targetId: target.id, targetCard: targetCard });
-  }
-  if (target.hasNoCardLeft()) {
-    io.emit('Game Over', { winner: attacker.id });
-  }
-}
-
-function endTurn(io, socket) {
-  const player = players[playerCurrentIndex];
-  if (player.id !== socket.id) {
-    socket.emit('error', { messsage: "Ce n'est pas votre tour !" });
-    return;
-  }
-  currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-  io.emit('nextTurn', { playerId: players[currentPlayerIndex].id });
-}
-
-
-function calculateDamage(attack, defense) {
-  const isCritical = Math.random() < CRITICAL_HIT_CHANCE;
-  const isDodged = Math.random() < DODGE_CHANCE;
-
-  if (isDodged) {
-    return 0;
-  }
-  return (attack * (isCritical ? 2 : 1)) - defense;
-}
-
-module.exports = { initGame };
+export default new GameService();
