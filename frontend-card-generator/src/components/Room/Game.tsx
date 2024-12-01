@@ -32,7 +32,7 @@ const Game: React.FC = (cards) => {
 
 
     useEffect(() => {    
-        connection.current = io("http://localhost:3000", {
+        connection.current = io("http://localhost:3001", {
             transports: ['websocket'],
             withCredentials: true
         });
